@@ -1,9 +1,18 @@
+
 {
   "name": "G.M. Automotive",
   "short_name": "G.M. Auto",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#101010",
-  "theme_color": "#101010",
-  "icons": []
+  "theme_color": "#D4AF37",
+  "icons": [
+    {
+      "src": "./a_sleek_glossy_app_icon_logo_design_a_black_rou.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
 }
