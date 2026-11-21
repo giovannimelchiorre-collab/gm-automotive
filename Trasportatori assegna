@@ -1,0 +1,100 @@
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101010">
+<title>Trasporti - G.M. Automotive</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#101010;color:white;font-family:Arial}
+header{background:#080808;padding:24px;text-align:center;border-bottom:2px solid #c8a45d}
+header b{color:#c8a45d;font-size:23px;letter-spacing:2px}
+main{max-width:700px;margin:auto;padding:18px}
+.card{background:#1b1b1b;border:1px solid #715b32;border-radius:12px;padding:17px;margin:15px 0}
+h2{color:#c8a45d}
+label{display:block;margin-top:12px}
+input,select{width:100%;padding:13px;background:#101010;color:white;border:1px solid #666;border-radius:8px;margin-top:5px;font-size:16px}
+button{background:#c8a45d;color:#111;border:0;padding:13px;border-radius:8px;font-weight:bold;margin-top:16px;width:100%}
+.item{border-top:1px solid #555;padding:14px 0}
+small{color:#aaa}
+a{color:#c8a45d}
+</style>
+</head>
+<body>
+<header>
+<b>G.M. AUTOMOTIVE</b>
+<p>GESTIONE TRASPORTI</p>
+</header>
+<main>
+<a href="./index.html">← Torna alla Home</a>
+
+<section class="card">
+<h2>Nuovo trasporto</h2>
+<label>Numero richiesta</label>
+<input id="request" placeholder="GM-0001">
+<label>Veicolo</label>
+<input id="vehicle" placeholder="Marca e modello">
+<label>Targa</label>
+<input id="plate" placeholder="AB123CD">
+<label>Luogo di ritiro</label>
+<input id="pickup" placeholder="Indirizzo di ritiro">
+<label>Destinazione</label>
+<input id="destination" placeholder="Indirizzo di consegna">
+<label>Trasportatore assegnato</label>
+<input id="transporter" placeholder="Nome trasportatore">
+<label>Stato</label>
+<select id="status">
+<option>Da assegnare</option>
+<option>Assegnato</option>
+<option>Ritiro effettuato</option>
+<option>In viaggio</option>
+<option>Consegnato</option>
+</select>
+<button onclick="save()">SALVA TRASPORTO</button>
+</section>
+
+<section class="card">
+<h2>Elenco trasporti</h2>
+<div id="list">Nessun trasporto inserito.</div>
+</section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+function save(){
+const v={
+request:$('request').value,
+vehicle:$('vehicle').value,
+plate:$('plate').value,
+pickup:$('pickup').value,
+destination:$('destination').value,
+transporter:$('transporter').value,
+status:$('status').value
+};
+if(!v.request||!v.vehicle||!v.pickup||!v.destination){
+alert('Compila richiesta, veicolo, ritiro e destinazione.');
+return;
+}
+const a=JSON.parse(localStorage.getItem('gm_transports')||'[]');
+a.unshift(v);
+localStorage.setItem('gm_transports',JSON.stringify(a));
+render();
+alert('Trasporto salvato.');
+}
+function render(){
+const a=JSON.parse(localStorage.getItem('gm_transports')||'[]');
+$('list').innerHTML=a.length?a.map(v=>`
+<div class="item">
+<b>${v.request} · ${v.vehicle}</b><br>
+Targa: ${v.plate}<br>
+Ritiro: ${v.pickup}<br>
+Destinazione: ${v.destination}<br>
+Trasportatore: ${v.transporter||'Da assegnare'}<br>
+Stato: ${v.status}
+</div>`).join(''):'Nessun trasporto inserito.';
+}
+render();
+</script>
+</body>
+</html>
