@@ -1,0 +1,151 @@
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Impostazioni - G.M. Automotive</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+body {
+  margin:0;
+  padding:20px;
+  background:#101010;
+  color:white;
+  font-family:Arial,sans-serif;
+}
+.container {
+  max-width:600px;
+  margin:30px auto;
+}
+h1,h2 {color:#c9a65b}
+.box {
+  background:#1b1b1b;
+  border:1px solid #c9a65b;
+  border-radius:14px;
+  padding:22px;
+  margin:18px 0;
+}
+input,button {
+  width:100%;
+  box-sizing:border-box;
+  padding:14px;
+  margin:9px 0;
+  border-radius:8px;
+  font-size:16px;
+}
+input {
+  background:#101010;
+  color:white;
+  border:1px solid #555;
+}
+button {
+  background:#c9a65b;
+  color:#101010;
+  border:0;
+  font-weight:bold;
+}
+.second {
+  background:transparent;
+  color:#c9a65b;
+  border:1px solid #c9a65b;
+}
+#messaggio {line-height:1.5}
+a {color:#c9a65b}
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>G.M. Automotive</h1>
+<h2>Impostazioni</h2>
+
+<div class="box">
+<h3>Account</h3>
+<p id="email">Caricamento...</p>
+<p id="stato"></p>
+</div>
+
+<div class="box">
+<h3>Modifica password</h3>
+<input id="password" type="password" placeholder="Nuova password">
+<input id="conferma" type="password" placeholder="Conferma password">
+<button onclick="cambiaPassword()">SALVA PASSWORD</button>
+</div>
+
+<div class="box">
+<h3>Gestione account</h3>
+<button class="second" onclick="esci()">ESCI DAL GESTIONALE</button>
+</div>
+
+<p id="messaggio"></p>
+<p><a href="./index.html">← Torna alla Home</a></p>
+
+</div>
+
+<script>
+const db = supabase.createClient(
+  'https://amnibfcgruniqzvjoaxn.supabase.co',
+  'sb_publishable_ya3B1_8f4nh5J4sokWhCHw_6mzOjWWv'
+);
+
+const GM_USER = '3605023d-8120-4881-a94d-71182988d9b2';
+
+async function avvia() {
+  const {data,error} = await db.auth.getSession();
+  const session = data.session;
+
+  if (error || !session) {
+    window.location.href = './login.html';
+    return;
+  }
+
+  if (session.user.id !== GM_USER) {
+    document.getElementById('stato').textContent =
+      'Accesso non autorizzato.';
+    return;
+  }
+
+  document.getElementById('email').textContent =
+    'Email: ' + session.user.email;
+  document.getElementById('stato').textContent =
+    'Account autenticato correttamente.';
+}
+
+async function cambiaPassword() {
+  const password = document.getElementById('password').value;
+  const conferma = document.getElementById('conferma').value;
+  const msg = document.getElementById('messaggio');
+
+  if (password.length < 8) {
+    msg.textContent = 'La password deve contenere almeno 8 caratteri.';
+    return;
+  }
+
+  if (password !== conferma) {
+    msg.textContent = 'Le password non coincidono.';
+    return;
+  }
+
+  msg.textContent = 'Aggiornamento in corso...';
+
+  const {error} = await db.auth.updateUser({password});
+
+  if (error) {
+    msg.textContent = 'Errore: ' + error.message;
+  } else {
+    msg.textContent = 'Password aggiornata correttamente.';
+    document.getElementById('password').value = '';
+    document.getElementById('conferma').value = '';
+  }
+}
+
+async function esci() {
+  await db.auth.signOut();
+  window.location.href = './login.html';
+}
+
+avvia();
+</script>
+</body>
+</html>
