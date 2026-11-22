@@ -69,10 +69,20 @@ button{padding:12px 16px;margin-top:12px;background:#c8a45d;color:#111;border:0;
 <script>
 const SUPABASE_URL='https://amnibfcgruniqzvjoaxn.supabase.co';
 const SUPABASE_KEY='sb_publishable_ya3B1_8f4nh5J4sokWhCHw_6mzOjWWv';
-const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);async function verificaAccesso(){
+ const {data,error}=await db.auth.getUser();
+
+ if(error || !data.user){
+  document.getElementById('elenco').textContent=
+  'Accesso non effettuato. Effettua il login.';
+  return false;
+ }
+
+ return true;
+}
 let clienti=[];
 
-async function carica(){
+async function carica(){ if(!(await verificaAccesso())) return;
  const {data,error}=await db.from('clienti').select('*').order('created_at',{ascending:false});
  if(error){
   $('elenco').textContent='Errore: '+error.message;
