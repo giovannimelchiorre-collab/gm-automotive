@@ -3,98 +3,107 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#101010">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Trasporti - G.M. Automotive</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#101010;color:white;font-family:Arial}
-header{background:#080808;padding:24px;text-align:center;border-bottom:2px solid #c8a45d}
-header b{color:#c8a45d;font-size:23px;letter-spacing:2px}
-main{max-width:700px;margin:auto;padding:18px}
-.card{background:#1b1b1b;border:1px solid #715b32;border-radius:12px;padding:17px;margin:15px 0}
-h2{color:#c8a45d}
-label{display:block;margin-top:12px}
-input,select{width:100%;padding:13px;background:#101010;color:white;border:1px solid #666;border-radius:8px;margin-top:5px;font-size:16px}
-button{background:#c8a45d;color:#111;border:0;padding:13px;border-radius:8px;font-weight:bold;margin-top:16px;width:100%}
-.item{border-top:1px solid #555;padding:14px 0}
-small{color:#aaa}
-a{color:#c8a45d}
+body{margin:0;background:#101010;color:white;font-family:Arial,sans-serif;padding:20px}
+header{color:#d4af37;text-align:center;font-size:25px;font-weight:bold;margin:15px 0 25px}
+main{max-width:650px;margin:auto}
+.card{background:#1b1b1b;border:1px solid #8d7025;border-radius:12px;padding:20px}
+h2{color:#d4af37}
+label{display:block;margin-top:14px;color:#d4af37}
+input,select,textarea{width:100%;padding:12px;margin-top:6px;background:#292929;color:white;border:1px solid #555;border-radius:7px;font-size:16px}
+button{width:100%;padding:14px;margin-top:22px;background:#d4af37;color:#111;border:0;border-radius:8px;font-weight:bold;font-size:16px}
+#messaggio{margin-top:15px;text-align:center}
 </style>
 </head>
 <body>
-<header>
-<b>G.M. AUTOMOTIVE</b>
-<p>GESTIONE TRASPORTI</p>
-</header>
+<header>G.M. AUTOMOTIVE</header>
 <main>
-<a href="./index.html">← Torna alla Home</a>
-
-<section class="card">
+<div class="card">
 <h2>Nuovo trasporto</h2>
-<label>Numero richiesta</label>
-<input id="request" placeholder="GM-0001">
+<form id="formTrasporto">
 <label>Veicolo</label>
-<input id="vehicle" placeholder="Marca e modello">
+<input id="veicolo" required>
 <label>Targa</label>
-<input id="plate" placeholder="AB123CD">
+<input id="targa">
 <label>Luogo di ritiro</label>
-<input id="pickup" placeholder="Indirizzo di ritiro">
-<label>Destinazione</label>
-<input id="destination" placeholder="Indirizzo di consegna">
-<label>Trasportatore assegnato</label>
-<input id="transporter" placeholder="Nome trasportatore">
+<input id="ritiro" required>
+<label>Luogo di consegna</label>
+<input id="consegna" required>
+<label>Distanza (km)</label>
+<input id="distanza" type="number" min="0" step="0.1">
+<label>Prezzo (€)</label>
+<input id="prezzo" type="number" min="0" step="0.01">
 <label>Stato</label>
-<select id="status">
-<option>Da assegnare</option>
-<option>Assegnato</option>
-<option>Ritiro effettuato</option>
-<option>In viaggio</option>
-<option>Consegnato</option>
+<select id="stato">
+<option value="Da assegnare">Da assegnare</option>
+<option value="In programma">In programma</option>
+<option value="In corso">In corso</option>
+<option value="Completato">Completato</option>
 </select>
-<button onclick="save()">SALVA TRASPORTO</button>
-</section>
-
-<section class="card">
-<h2>Elenco trasporti</h2>
-<div id="list">Nessun trasporto inserito.</div>
-</section>
+<label>Note</label>
+<textarea id="note" rows="3"></textarea>
+<button type="submit" id="salva">SALVA TRASPORTO</button>
+<div id="messaggio"></div>
+</form>
+</div>
 </main>
 <script>
-const $=id=>document.getElementById(id);
-function save(){
-const v={
-request:$('request').value,
-vehicle:$('vehicle').value,
-plate:$('plate').value,
-pickup:$('pickup').value,
-destination:$('destination').value,
-transporter:$('transporter').value,
-status:$('status').value
-};
-if(!v.request||!v.vehicle||!v.pickup||!v.destination){
-alert('Compila richiesta, veicolo, ritiro e destinazione.');
-return;
+const SUPABASE_URL='https://amnibfcgruniqzvjoaxn.supabase.co';
+const SUPABASE_KEY='sb_publishable_ya3B1_8f4nh5J4sokWhCHw_6mzOjWWv';
+const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+async function controlloAccesso(){
+ const {data,error}=await db.auth.getSession();
+ if(error || !data.session){
+  location.href='login.html';
+  return false;
+ }
+ return true;
 }
-const a=JSON.parse(localStorage.getItem('gm_transports')||'[]');
-a.unshift(v);
-localStorage.setItem('gm_transports',JSON.stringify(a));
-render();
-alert('Trasporto salvato.');
-}
-function render(){
-const a=JSON.parse(localStorage.getItem('gm_transports')||'[]');
-$('list').innerHTML=a.length?a.map(v=>`
-<div class="item">
-<b>${v.request} · ${v.vehicle}</b><br>
-Targa: ${v.plate}<br>
-Ritiro: ${v.pickup}<br>
-Destinazione: ${v.destination}<br>
-Trasportatore: ${v.transporter||'Da assegnare'}<br>
-Stato: ${v.status}
-</div>`).join(''):'Nessun trasporto inserito.';
-}
-render();
+
+document.getElementById('formTrasporto').addEventListener('submit',async function(e){
+ e.preventDefault();
+ const bottone=document.getElementById('salva');
+ const msg=document.getElementById('messaggio');
+ bottone.disabled=true;
+ bottone.textContent='SALVATAGGIO...';
+ msg.textContent='';
+
+ try{
+  const ok=await controlloAccesso();
+  if(!ok)return;
+
+  const record={
+   veicolo:document.getElementById('veicolo').value.trim(),
+   targa:document.getElementById('targa').value.trim(),
+   luogo_ritiro:document.getElementById('ritiro').value.trim(),
+   luogo_consegna:document.getElementById('consegna').value.trim(),
+   distanza_km:document.getElementById('distanza').value===''?null:Number(document.getElementById('distanza').value),
+   prezzo:document.getElementById('prezzo').value===''?null:Number(document.getElementById('prezzo').value),
+   stato:document.getElementById('stato').value,
+   note:document.getElementById('note').value.trim()
+  };
+
+  const {data,error}=await db.from('richieste').insert(record).select();
+
+  if(error)throw error;
+
+  msg.style.color='#65d68a';
+  msg.textContent='Trasporto salvato correttamente!';
+  this.reset();
+ }catch(error){
+  msg.style.color='#ff7777';
+  msg.textContent='Errore: '+error.message;
+ }finally{
+  bottone.disabled=false;
+  bottone.textContent='SALVA TRASPORTO';
+ }
+});
 </script>
 </body>
 </html>
+
