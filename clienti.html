@@ -1,1 +1,160 @@
 
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101010">
+<title>Clienti - G.M. Automotive</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#101010;color:white;font-family:Arial,sans-serif}
+header{padding:24px;text-align:center;background:#080808;border-bottom:2px solid #c8a45d}
+header b{color:#c8a45d;letter-spacing:2px}
+main{max-width:700px;margin:auto;padding:20px}
+h1,h2{color:#c8a45d}
+.card{background:#1b1b1b;border:1px solid #715b32;border-radius:14px;padding:18px;margin:16px 0}
+label{display:block;margin-top:12px;color:#ccc}
+input,textarea{width:100%;padding:13px;margin-top:5px;background:#101010;color:white;border:1px solid #555;border-radius:8px;font-size:16px}
+button{padding:12px 16px;margin-top:12px;background:#c8a45d;color:#111;border:0;border-radius:8px;font-weight:bold}
+.secondary{background:#333;color:white}
+.cliente{padding:14px 0;border-bottom:1px solid #444}
+.muted{color:#aaa;font-size:13px}
+</style>
+</head>
+<body>
+<header>
+<b>G.M. AUTOMOTIVE</b>
+<div class="muted">GESTIONE CLIENTI</div>
+</header>
+<main>
+<button class="secondary" onclick="location.href='./index.html'">← HOME</button>
+<h1>Clienti</h1>
+
+<section class="card">
+<h2 id="formTitle">Nuovo cliente</h2>
+<input type="hidden" id="id">
+
+<label>Nome</label>
+<input id="nome" placeholder="Nome" required>
+
+<label>Cognome</label>
+<input id="cognome" placeholder="Cognome">
+
+<label>Telefono</label>
+<input id="telefono" type="tel" placeholder="Telefono">
+
+<label>Email</label>
+<input id="email" type="email" placeholder="Email">
+
+<label>Indirizzo</label>
+<input id="indirizzo" placeholder="Indirizzo">
+
+<label>Note</label>
+<textarea id="note" placeholder="Note sul cliente"></textarea>
+
+<button onclick="salva()">SALVA CLIENTE</button>
+<button class="secondary" onclick="resetForm()">ANNULLA</button>
+<p id="msg" class="muted"></p>
+</section>
+
+<section class="card">
+<h2>Archivio clienti</h2>
+<input id="cerca" placeholder="Cerca cliente..." oninput="render()">
+<div id="elenco">Caricamento...</div>
+</section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL='https://amnibfcgruniqzvjoaxn.supabase.co';
+const SUPABASE_KEY='sb_publishable_ya3B1_8f4nh5J4sokWhCHw_6mzOjWWv';
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let clienti=[];
+
+async function carica(){
+ const {data,error}=await db.from('clienti').select('*').order('created_at',{ascending:false});
+ if(error){
+  $('elenco').textContent='Errore: '+error.message;
+  return;
+ }
+ clienti=data||[];
+ render();
+}
+function $(id){return document.getElementById(id)}
+
+async function salva(){
+ const id=$('id').value;
+ const nome=$('nome').value.trim();
+ if(!nome){alert('Inserisci il nome');return}
+ const record={
+  nome,
+  cognome:$('cognome').value.trim(),
+  telefono:$('telefono').value.trim(),
+  email:$('email').value.trim(),
+  indirizzo:$('indirizzo').value.trim(),
+  note:$('note').value.trim()
+ };
+ const result=id
+  ?await db.from('clienti').update(record).eq('id',id)
+  :await db.from('clienti').insert(record);
+ if(result.error){
+  $('msg').textContent='Errore: '+result.error.message;
+  return;
+ }
+ $('msg').textContent='Cliente salvato correttamente.';
+ resetForm();
+ await carica();
+}
+
+function render(){
+ const q=$('cerca').value.toLowerCase();
+ const lista=clienti.filter(c=>
+  [c.nome,c.cognome,c.telefono,c.email]
+  .join(' ').toLowerCase().includes(q)
+ );
+ $('elenco').innerHTML=lista.length?lista.map(c=>`
+ <div class="cliente">
+ <b>${escapeHtml(c.nome)} ${escapeHtml(c.cognome||'')}</b>
+ <div class="muted">${escapeHtml(c.telefono||'')} · ${escapeHtml(c.email||'')}</div>
+ <div class="muted">${escapeHtml(c.indirizzo||'')}</div>
+ <button onclick="modifica('${c.id}')">MODIFICA</button>
+ <button class="secondary" onclick="elimina('${c.id}')">ELIMINA</button>
+ </div>`).join(''):'Nessun cliente trovato.';
+}
+
+function escapeHtml(v){
+ return String(v).replace(/[&<>"']/g,c=>({
+ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+ }[c]));
+}
+
+function modifica(id){
+ const c=clienti.find(x=>x.id===id);
+ if(!c)return;
+ $('id').value=c.id;
+ ['nome','cognome','telefono','email','indirizzo','note']
+ .forEach(k=>$(k).value=c[k]||'');
+ $('formTitle').textContent='Modifica cliente';
+ window.scrollTo({top:0,behavior:'smooth'});
+}
+
+async function elimina(id){
+ if(!confirm('Vuoi eliminare questo cliente?'))return;
+ const {error}=await db.from('clienti').delete().eq('id',id);
+ if(error){alert(error.message);return}
+ await carica();
+}
+
+function resetForm(){
+ $('id').value='';
+ ['nome','cognome','telefono','email','indirizzo','note']
+ .forEach(k=>$(k).value='');
+ $('formTitle').textContent='Nuovo cliente';
+}
+
+carica();
+</script>
+</body>
+</html>
+
