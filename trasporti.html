@@ -4,39 +4,62 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101010">
 <title>Trasporti - G.M. Automotive</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#101010;color:white;font-family:Arial,sans-serif;padding:20px}
-header{color:#d4af37;text-align:center;font-size:25px;font-weight:bold;margin:15px 0 25px}
-main{max-width:650px;margin:auto}
-.card{background:#1b1b1b;border:1px solid #8d7025;border-radius:12px;padding:20px}
-h2{color:#d4af37}
+body{margin:0;background:#101010;color:white;font-family:Arial,sans-serif;padding:18px}
+header{text-align:center;color:#d4af37;font-size:25px;font-weight:bold;padding:20px}
+main{max-width:850px;margin:auto}
+.card{background:#1b1b1b;border:1px solid #8d7025;border-radius:12px;padding:20px;margin-bottom:20px}
+h2{color:#d4af37;margin-top:0}
 label{display:block;margin-top:14px;color:#d4af37}
 input,select,textarea{width:100%;padding:12px;margin-top:6px;background:#292929;color:white;border:1px solid #555;border-radius:7px;font-size:16px}
-button{width:100%;padding:14px;margin-top:22px;background:#d4af37;color:#111;border:0;border-radius:8px;font-weight:bold;font-size:16px}
-#messaggio{margin-top:15px;text-align:center}
+button{padding:12px;margin-top:12px;background:#d4af37;color:#111;border:0;border-radius:7px;font-weight:bold;font-size:14px;cursor:pointer}
+button:disabled{opacity:.5}
+.second{background:#444;color:white}
+.danger{background:#a83232;color:white}
+.home{display:inline-block;color:#d4af37;text-decoration:none;margin-bottom:18px}
+.item{border:1px solid #554522;border-radius:9px;padding:15px;margin-top:13px;background:#222}
+.item h3{color:#d4af37;margin:0 0 10px}
+.item p{margin:6px 0;color:#ddd;font-size:14px;overflow-wrap:anywhere}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.actions button{flex:1}
+#messaggio{text-align:center;margin-top:14px}
+small{color:#aaa}
 </style>
 </head>
+
 <body>
-<header>G.M. AUTOMOTIVE</header>
+<header>G.M. AUTOMOTIVE<br><small>GESTIONE TRASPORTI</small></header>
+
 <main>
+<a class="home" href="./index.html">← TORNA ALLA HOME</a>
+
 <div class="card">
-<h2>Nuovo trasporto</h2>
+<h2 id="titoloForm">Nuovo trasporto</h2>
+
 <form id="formTrasporto">
 <label>Veicolo</label>
 <input id="veicolo" required>
+
 <label>Targa</label>
 <input id="targa">
+
 <label>Luogo di ritiro</label>
 <input id="ritiro" required>
+
 <label>Luogo di consegna</label>
 <input id="consegna" required>
+
 <label>Distanza (km)</label>
 <input id="distanza" type="number" min="0" step="0.1">
+
 <label>Prezzo (€)</label>
 <input id="prezzo" type="number" min="0" step="0.01">
+
 <label>Stato</label>
 <select id="stato">
 <option value="Da assegnare">Da assegnare</option>
@@ -44,17 +67,39 @@ button{width:100%;padding:14px;margin-top:22px;background:#d4af37;color:#111;bor
 <option value="In corso">In corso</option>
 <option value="Completato">Completato</option>
 </select>
+
 <label>Note</label>
 <textarea id="note" rows="3"></textarea>
+
 <button type="submit" id="salva">SALVA TRASPORTO</button>
+<button type="button" class="second" id="annulla" hidden>ANNULLA MODIFICA</button>
 <div id="messaggio"></div>
 </form>
 </div>
+
+<div class="card">
+<h2>Elenco trasporti</h2>
+<button type="button" class="second" id="aggiorna">AGGIORNA ELENCO</button>
+<div id="elenco"><small>Caricamento...</small></div>
+</div>
 </main>
+
 <script>
 const SUPABASE_URL='https://amnibfcgruniqzvjoaxn.supabase.co';
 const SUPABASE_KEY='sb_publishable_ya3B1_8f4nh5J4sokWhCHw_6mzOjWWv';
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+let modificaId=null;
+
+const form=document.getElementById('formTrasporto');
+const msg=document.getElementById('messaggio');
+const elenco=document.getElementById('elenco');
+
+function escapeHtml(value){
+ return String(value ?? '').replace(/[&<>"']/g,function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+ });
+}
 
 async function controlloAccesso(){
  const {data,error}=await db.auth.getSession();
@@ -65,45 +110,164 @@ async function controlloAccesso(){
  return true;
 }
 
-document.getElementById('formTrasporto').addEventListener('submit',async function(e){
+function leggiDati(){
+ return {
+  veicolo:document.getElementById('veicolo').value.trim(),
+  targa:document.getElementById('targa').value.trim(),
+  luogo_ritiro:document.getElementById('ritiro').value.trim(),
+  luogo_consegna:document.getElementById('consegna').value.trim(),
+  distanza_km:document.getElementById('distanza').value===''?null:Number(document.getElementById('distanza').value),
+  prezzo:document.getElementById('prezzo').value===''?null:Number(document.getElementById('prezzo').value),
+  stato:document.getElementById('stato').value,
+  note:document.getElementById('note').value.trim()
+ };
+}
+
+function resetForm(){
+ form.reset();
+ modificaId=null;
+ document.getElementById('titoloForm').textContent='Nuovo trasporto';
+ document.getElementById('salva').textContent='SALVA TRASPORTO';
+ document.getElementById('annulla').hidden=true;
+}
+
+form.addEventListener('submit',async function(e){
  e.preventDefault();
+
  const bottone=document.getElementById('salva');
- const msg=document.getElementById('messaggio');
  bottone.disabled=true;
- bottone.textContent='SALVATAGGIO...';
- msg.textContent='';
+ msg.textContent='Salvataggio in corso...';
 
  try{
-  const ok=await controlloAccesso();
-  if(!ok)return;
+  if(!await controlloAccesso())return;
 
-  const record={
-   veicolo:document.getElementById('veicolo').value.trim(),
-   targa:document.getElementById('targa').value.trim(),
-   luogo_ritiro:document.getElementById('ritiro').value.trim(),
-   luogo_consegna:document.getElementById('consegna').value.trim(),
-   distanza_km:document.getElementById('distanza').value===''?null:Number(document.getElementById('distanza').value),
-   prezzo:document.getElementById('prezzo').value===''?null:Number(document.getElementById('prezzo').value),
-   stato:document.getElementById('stato').value,
-   note:document.getElementById('note').value.trim()
-  };
+  const record=leggiDati();
+  let risultato;
 
-  const {data,error}=await db.from('richieste').insert(record).select();
+  if(modificaId){
+   risultato=await db.from('richieste')
+    .update(record)
+    .eq('id',modificaId)
+    .select();
+  }else{
+   risultato=await db.from('richieste')
+    .insert(record)
+    .select();
+  }
 
-  if(error)throw error;
+  if(risultato.error)throw risultato.error;
+  if(!risultato.data || risultato.data.length===0){
+   throw new Error('Nessun record modificato. Verifica i permessi.');
+  }
 
   msg.style.color='#65d68a';
-  msg.textContent='Trasporto salvato correttamente!';
-  this.reset();
+  msg.textContent=modificaId?'Trasporto modificato correttamente!':'Trasporto salvato correttamente!';
+  resetForm();
+  await caricaTrasporti();
+
  }catch(error){
   msg.style.color='#ff7777';
   msg.textContent='Errore: '+error.message;
  }finally{
   bottone.disabled=false;
-  bottone.textContent='SALVA TRASPORTO';
  }
+});
+
+document.getElementById('annulla').addEventListener('click',function(){
+ resetForm();
+ msg.textContent='';
+});
+
+async function caricaTrasporti(){
+ elenco.innerHTML='<small>Caricamento trasporti...</small>';
+
+ try{
+  if(!await controlloAccesso())return;
+
+  const {data,error}=await db.from('richieste')
+   .select('id,veicolo,targa,luogo_ritiro,luogo_consegna,distanza_km,prezzo,stato,note,created_at')
+   .order('created_at',{ascending:false});
+
+  if(error)throw error;
+
+  if(!data || data.length===0){
+   elenco.innerHTML='<p>Nessun trasporto presente.</p>';
+   return;
+  }
+
+  elenco.innerHTML=data.map(t=>`
+   <div class="item">
+    <h3>${escapeHtml(t.veicolo)}</h3>
+    <p><b>Targa:</b> ${escapeHtml(t.targa || '-')}</p>
+    <p><b>Ritiro:</b> ${escapeHtml(t.luogo_ritiro)}</p>
+    <p><b>Consegna:</b> ${escapeHtml(t.luogo_consegna)}</p>
+    <p><b>Distanza:</b> ${escapeHtml(t.distanza_km ?? '-')} km</p>
+    <p><b>Prezzo:</b> ${t.prezzo===null?' - ':escapeHtml(t.prezzo)+' €'}</p>
+    <p><b>Stato:</b> ${escapeHtml(t.stato || '-')}</p>
+    <p><b>Note:</b> ${escapeHtml(t.note || '-')}</p>
+    <div class="actions">
+     <button type="button" onclick="modificaTrasporto('${t.id}')">MODIFICA</button>
+     <button type="button" class="danger" onclick="eliminaTrasporto('${t.id}')">ELIMINA</button>
+    </div>
+   </div>
+  `).join('');
+
+ }catch(error){
+  elenco.innerHTML='<p style="color:#ff7777">Errore: '+escapeHtml(error.message)+'</p>';
+ }
+}
+
+async function modificaTrasporto(id){
+ try{
+  const {data,error}=await db.from('richieste')
+   .select('*').eq('id',id).single();
+
+  if(error)throw error;
+
+  modificaId=id;
+  document.getElementById('veicolo').value=data.veicolo || '';
+  document.getElementById('targa').value=data.targa || '';
+  document.getElementById('ritiro').value=data.luogo_ritiro || '';
+  document.getElementById('consegna').value=data.luogo_consegna || '';
+  document.getElementById('distanza').value=data.distanza_km ?? '';
+  document.getElementById('prezzo').value=data.prezzo ?? '';
+  document.getElementById('stato').value=data.stato || 'Da assegnare';
+  document.getElementById('note').value=data.note || '';
+
+  document.getElementById('titoloForm').textContent='Modifica trasporto';
+  document.getElementById('salva').textContent='SALVA MODIFICHE';
+  document.getElementById('annulla').hidden=false;
+  msg.textContent='Stai modificando il trasporto selezionato.';
+  window.scrollTo({top:0,behavior:'smooth'});
+
+ }catch(error){
+  alert('Errore: '+error.message);
+ }
+}
+
+async function eliminaTrasporto(id){
+ if(!confirm('Vuoi eliminare definitivamente questo trasporto?'))return;
+
+ try{
+  const {error}=await db.from('richieste').delete().eq('id',id);
+  if(error)throw error;
+
+  msg.style.color='#65d68a';
+  msg.textContent='Trasporto eliminato.';
+  await caricaTrasporti();
+
+ }catch(error){
+  alert('Errore durante eliminazione: '+error.message);
+ }
+}
+
+document.getElementById('aggiorna').addEventListener('click',caricaTrasporti);
+
+controlloAccesso().then(ok=>{
+ if(ok)caricaTrasporti();
 });
 </script>
 </body>
 </html>
+
 
