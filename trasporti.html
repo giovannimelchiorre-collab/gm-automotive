@@ -97,9 +97,40 @@ const SUPABASE_KEY='sb_publishable_ya3B1_8f4nh5J4sokWhCHw_6mzOjWWv';
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 let modificaId=null;
- function calcolaPrezzo(){
- const km=Number(document.getElementById('distanza').value);
- const tariffa=Number(document.getElementById('tariffa').value);
+function aggiornaModalitaPrezzo(){
+ const modalita=document.getElementById('modalitaPrezzo').value;
+ const tariffa=document.getElementById('tariffa');
+ const prezzo=document.getElementById('prezzo');
+
+ if(modalita==='km'){
+  tariffa.parentElement.style.display='block';
+  prezzo.readOnly=true;
+  calcolaPrezzo();
+ }else{
+  tariffa.parentElement.style.display='none';
+  prezzo.readOnly=false;
+  prezzo.value='';
+ }
+}
+
+function calcolaPrezzo(){
+ const km=document.getElementById('distanza').value;
+ const tariffa=document.getElementById('tariffa').value;
+
+ if(km==='' || tariffa===''){
+  document.getElementById('prezzo').value='';
+  return;
+ }
+
+ document.getElementById('prezzo').value=
+  (Number(km)*Number(tariffa)).toFixed(2);
+}
+
+document.getElementById('distanza').addEventListener('input',calcolaPrezzo);
+document.getElementById('tariffa').addEventListener('input',calcolaPrezzo);
+document.getElementById('modalitaPrezzo').addEventListener('change',aggiornaModalitaPrezzo);
+
+aggiornaModalitaPrezzo();
 
  if(
   document.getElementById('distanza').value==='' ||
