@@ -11,100 +11,43 @@
 
 <style>
 *{box-sizing:border-box}
-
 body{
- margin:0;
- padding:20px;
- background:#101010;
- color:white;
- font-family:Arial,sans-serif;
+ margin:0;padding:20px;background:#101010;color:white;
+ font-family:Arial,sans-serif
 }
-
 .container{
- max-width:600px;
- margin:25px auto;
- padding:25px;
- background:#191919;
- border:1px solid #b99a45;
- border-radius:14px;
+ max-width:600px;margin:25px auto;padding:25px;
+ background:#191919;border:1px solid #b99a45;border-radius:14px
 }
-
-h1{
- text-align:center;
- color:#d4af55;
- font-size:25px;
-}
-
-.subtitle{
- text-align:center;
- color:#ccc;
- margin-bottom:25px;
-}
-
+h1{text-align:center;color:#d4af55;font-size:25px}
+.subtitle{text-align:center;color:#ccc;margin-bottom:25px}
 label{
- display:block;
- margin:15px 0 7px;
- color:#d4af55;
- font-weight:bold;
+ display:block;margin:15px 0 7px;color:#d4af55;font-weight:bold
 }
-
 input,textarea{
- width:100%;
- padding:13px;
- border:1px solid #555;
- border-radius:7px;
- background:#101010;
- color:white;
- font-size:16px;
+ width:100%;padding:13px;border:1px solid #555;
+ border-radius:7px;background:#101010;color:white;font-size:16px
 }
-
-textarea{
- min-height:90px;
- resize:vertical;
-}
-
+textarea{min-height:90px;resize:vertical}
 button{
- width:100%;
- margin-top:25px;
- padding:16px;
- background:#d4af55;
- color:#111;
- border:0;
- border-radius:8px;
- font-size:16px;
- font-weight:bold;
- cursor:pointer;
+ width:100%;margin-top:25px;padding:16px;background:#d4af55;
+ color:#111;border:0;border-radius:8px;font-size:16px;
+ font-weight:bold;cursor:pointer
 }
-
-button:disabled{
- opacity:.6;
-}
-
+button:disabled{opacity:.6}
 .back{
- display:block;
- text-align:center;
- margin-top:20px;
- color:#d4af55;
- text-decoration:none;
+ display:block;text-align:center;margin-top:20px;
+ color:#d4af55;text-decoration:none
 }
-
 #messaggio{
- margin-top:18px;
- text-align:center;
- font-weight:bold;
+ margin-top:18px;text-align:center;font-weight:bold;
+ overflow-wrap:anywhere
 }
-
-.small{
- color:#aaa;
- font-size:12px;
- text-align:center;
- margin-top:18px;
-}
+.small{color:#aaa;font-size:12px;text-align:center;margin-top:18px}
 </style>
 </head>
 
 <body>
-
 <div class="container">
 
 <h1>G.M. AUTOMOTIVE</h1>
@@ -137,16 +80,15 @@ button:disabled{
 <input type="date" id="dataRitiro">
 
 <label>Note aggiuntive</label>
-<textarea id="note" placeholder="Inserisci eventuali informazioni aggiuntive"></textarea>
+<textarea id="note" placeholder="Eventuali informazioni aggiuntive"></textarea>
 
 <button type="submit" id="invia">INVIA RICHIESTA</button>
 
 </form>
 
-<div id="messaggio"></div>
+<div id="messaggio" role="status" aria-live="polite"></div>
 
 <p class="small">I campi contrassegnati con * sono obbligatori.</p>
-
 <a class="back" href="./index.html">← Torna alla Home</a>
 
 </div>
@@ -155,66 +97,79 @@ button:disabled{
 const SUPABASE_URL = "https://amnibfcgruniqzvjoaxn.supabase.co";
 const SUPABASE_KEY = "sb_publishable_ya3B1_8f4nh5J4sokWhCHw_6mzOjWWv";
 
-const supabaseClient = window.supabase.createClient(
- SUPABASE_URL,
- SUPABASE_KEY
-);
-
 const form = document.getElementById("formRichiesta");
 const messaggio = document.getElementById("messaggio");
 const bottone = document.getElementById("invia");
 
-form.addEventListener("submit", async function(e){
+function mostraMessaggio(testo, colore) {
+ messaggio.style.color = colore;
+ messaggio.textContent = testo;
+}
 
+form.addEventListener("submit", async function(e) {
  e.preventDefault();
+
+ if (!form.reportValidity()) return;
 
  bottone.disabled = true;
  bottone.textContent = "INVIO IN CORSO...";
- messaggio.textContent = "";
+ mostraMessaggio("Invio della richiesta in corso...", "#d4af55");
 
- const richiesta = {
-  nome: document.getElementById("nome").value.trim(),
-  telefono: document.getElementById("telefono").value.trim(),
-  email: document.getElementById("email").value.trim() || null,
-  veicolo: document.getElementById("veicolo").value.trim(),
-  targa: document.getElementById("targa").value.trim() || null,
-  luogo_ritiro: document.getElementById("ritiro").value.trim(),
-  luogo_consegna: document.getElementById("consegna").value.trim(),
-  data_ritiro: document.getElementById("dataRitiro").value || null,
-  note: document.getElementById("note").value.trim() || null
- };
+ try {
+  if (!window.supabase) {
+   throw new Error("Libreria Supabase non caricata. Controlla la connessione.");
+  }
 
- try{
+  const client = window.supabase.createClient(
+   SUPABASE_URL,
+   SUPABASE_KEY
+  );
 
-  const { error } = await supabaseClient
+  const richiesta = {
+   nome: document.getElementById("nome").value.trim(),
+   telefono: document.getElementById("telefono").value.trim(),
+   email: document.getElementById("email").value.trim() || null,
+   veicolo: document.getElementById("veicolo").value.trim(),
+   targa: document.getElementById("targa").value.trim() || null,
+   luogo_ritiro: document.getElementById("ritiro").value.trim(),
+   luogo_consegna: document.getElementById("consegna").value.trim(),
+   data_ritiro: document.getElementById("dataRitiro").value || null,
+   note: document.getElementById("note").value.trim() || null
+  };
+
+  const { error } = await client
    .from("richieste_clienti")
    .insert([richiesta]);
 
-  if(error) throw error;
-
-  messaggio.style.color = "#d4af55";
-  messaggio.textContent =
-   "Richiesta inviata correttamente! Ti contatteremo al più presto.";
+  if (error) {
+   console.error("Errore Supabase:", error);
+   throw new Error(
+    error.message +
+    (error.code ? " (Codice: " + error.code + ")" : "") +
+    (error.hint ? " - " + error.hint : "")
+   );
+  }
 
   form.reset();
+  mostraMessaggio(
+   "Richiesta inviata correttamente! Ti contatteremo al più presto.",
+   "#d4af55"
+  );
 
- }catch(error){
+ } catch (error) {
+  console.error("Errore invio:", error);
+  mostraMessaggio(
+   "INVIO NON RIUSCITO: " + error.message,
+   "#ff7777"
+  );
 
-  console.error("Errore invio richiesta:", error);
-
-  messaggio.style.color = "#ff7777";
-  messaggio.textContent =
-   "ERRORE: " + (error.message || JSON.stringify(error));
-
-}finally{
-
+ } finally {
   bottone.disabled = false;
   bottone.textContent = "INVIA RICHIESTA";
-
  }
-
 });
 </script>
 
 </body>
 </html>
+
