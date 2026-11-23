@@ -11,139 +11,54 @@
 
 <style>
 *{box-sizing:border-box}
-
 body{
- margin:0;
- padding:20px;
- background:#101010;
- color:white;
+ margin:0;padding:20px;background:#101010;color:white;
  font-family:Arial,sans-serif;
 }
-
-.container{
- max-width:1100px;
- margin:20px auto;
-}
-
-h1{
- color:#d4af55;
- text-align:center;
-}
-
-.subtitle{
- text-align:center;
- color:#aaa;
- margin-bottom:25px;
-}
-
+.container{max-width:1100px;margin:20px auto}
+h1{color:#d4af55;text-align:center}
+.subtitle{text-align:center;color:#aaa;margin-bottom:25px}
 .top{
- display:flex;
- justify-content:space-between;
- align-items:center;
- gap:10px;
- flex-wrap:wrap;
- margin-bottom:20px;
+ display:flex;justify-content:space-between;align-items:center;
+ gap:10px;flex-wrap:wrap;margin-bottom:20px;
 }
-
 button,.home{
- border:0;
- border-radius:7px;
- padding:12px 17px;
- background:#d4af55;
- color:#111;
- font-weight:bold;
- cursor:pointer;
- text-decoration:none;
+ border:0;border-radius:7px;padding:12px 17px;
+ background:#d4af55;color:#111;font-weight:bold;
+ cursor:pointer;text-decoration:none;
 }
-
-button:disabled{
- opacity:.55;
- cursor:not-allowed;
-}
-
+button:disabled{opacity:.55;cursor:not-allowed}
 #messaggio{
- text-align:center;
- margin:15px 0;
- color:#d4af55;
+ text-align:center;margin:15px 0;color:#d4af55;
  overflow-wrap:anywhere;
 }
-
 .card{
- background:#191919;
- border:1px solid #806b36;
- border-radius:12px;
- padding:18px;
- margin-bottom:15px;
+ background:#191919;border:1px solid #806b36;
+ border-radius:12px;padding:18px;margin-bottom:15px;
 }
-
-.card h3{
- color:#d4af55;
- margin-top:0;
-}
-
-.info{
- line-height:1.8;
- overflow-wrap:anywhere;
-}
-
-.info strong{
- color:#d4af55;
-}
-
-.link{
- color:#d4af55;
- text-decoration:none;
-}
-
+.card h3{color:#d4af55;margin-top:0}
+.info{line-height:1.8;overflow-wrap:anywhere}
+.info strong{color:#d4af55}
+.link{color:#d4af55;text-decoration:none}
 select{
- width:100%;
- max-width:300px;
- padding:11px;
- margin-top:8px;
- background:#101010;
- color:white;
- border:1px solid #b99a45;
- border-radius:7px;
- font-size:15px;
+ width:100%;max-width:300px;padding:11px;margin-top:8px;
+ background:#101010;color:white;border:1px solid #b99a45;
+ border-radius:7px;font-size:15px;
 }
-
-.stato{
- margin-top:15px;
-}
-
+.stato{margin-top:15px}
 .converti{
- display:block;
- width:100%;
- margin-top:18px;
- padding:15px;
- background:#d4af55;
- color:#111;
- font-size:15px;
+ display:block;width:100%;margin-top:18px;padding:15px;
+ background:#d4af55;color:#111;font-size:15px;
 }
-
 .convertito{
- display:block;
- width:100%;
- margin-top:18px;
- padding:15px;
- background:#245b3a;
- color:white;
- cursor:default;
+ display:block;width:100%;margin-top:18px;padding:15px;
+ background:#245b3a;color:white;cursor:default;
 }
-
-.data{
- color:#999;
- font-size:13px;
-}
-
+.data{color:#999;font-size:13px}
 .empty{
- text-align:center;
- padding:35px;
- color:#aaa;
- background:#191919;
- border-radius:10px;
+ text-align:center;padding:35px;color:#aaa;
+ background:#191919;border-radius:10px;
 }
-
 @media(max-width:600px){
  body{padding:12px}
  .card{padding:14px}
@@ -152,7 +67,6 @@ select{
 </head>
 
 <body>
-
 <div class="container">
 
 <h1>G.M. AUTOMOTIVE</h1>
@@ -180,30 +94,30 @@ const client = window.supabase.createClient(
 const elenco = document.getElementById("elenco");
 const messaggio = document.getElementById("messaggio");
 
-function creaElemento(tag, testo, classe){
- const el = document.createElement(tag);
- if(testo !== null) el.textContent = testo;
- if(classe) el.className = classe;
+function creaElemento(tag,testo,classe){
+ const el=document.createElement(tag);
+ if(testo!==null) el.textContent=testo;
+ if(classe) el.className=classe;
  return el;
 }
 
-function campo(contenitore, etichetta, valore){
- const riga = document.createElement("div");
- riga.className = "info";
+function campo(contenitore,etichetta,valore){
+ const riga=document.createElement("div");
+ riga.className="info";
 
- const strong = document.createElement("strong");
- strong.textContent = etichetta + ": ";
+ const strong=document.createElement("strong");
+ strong.textContent=etichetta+": ";
 
  riga.appendChild(strong);
- riga.appendChild(document.createTextNode(valore || "Non indicato"));
+ riga.appendChild(document.createTextNode(valore||"Non indicato"));
  contenitore.appendChild(riga);
 }
 
-function aggiungiLink(contenitore, testo, url){
- const a = document.createElement("a");
- a.className = "link";
- a.href = url;
- a.textContent = testo;
+function aggiungiLink(contenitore,testo,url){
+ const a=document.createElement("a");
+ a.className="link";
+ a.href=url;
+ a.textContent=testo;
  contenitore.appendChild(a);
 }
 
@@ -212,116 +126,180 @@ function dataFormattata(data){
  return new Date(data).toLocaleString("it-IT");
 }
 
-async function creaTrasporto(r, pulsante){
+/* CERCA UN CLIENTE ESISTENTE O NE CREA UNO NUOVO */
+
+async function trovaOCreaCliente(r){
+
+ let cliente=null;
+ let error=null;
+
+ if(r.telefono){
+  const risultato=await client
+   .from("clienti")
+   .select("id")
+   .eq("telefono",r.telefono)
+   .limit(1)
+   .maybeSingle();
+
+  cliente=risultato.data;
+  error=risultato.error;
+
+  if(error) throw error;
+ }
+
+ if(!cliente && r.email){
+  const risultato=await client
+   .from("clienti")
+   .select("id")
+   .eq("email",r.email)
+   .limit(1)
+   .maybeSingle();
+
+  cliente=risultato.data;
+  error=risultato.error;
+
+  if(error) throw error;
+ }
+
+ if(cliente){
+  return cliente.id;
+ }
+
+ const {data:nuovoCliente,error:erroreCreazione}=await client
+  .from("clienti")
+  .insert({
+   nome:r.nome || "Cliente",
+   telefono:r.telefono || null,
+   email:r.email || null,
+   note:"Cliente registrato automaticamente da richiesta trasporto."
+  })
+  .select("id")
+  .single();
+
+ if(erroreCreazione) throw erroreCreazione;
+
+ return nuovoCliente.id;
+}
+
+/* CREA IL TRASPORTO E LO COLLEGA AL CLIENTE */
+
+async function creaTrasporto(r,pulsante){
 
  if(r.trasporto_id){
-  messaggio.textContent = "Questa richiesta è già stata trasformata in trasporto.";
+  messaggio.textContent="Questa richiesta è già stata trasformata.";
   return;
  }
 
  if(!r.veicolo || !r.luogo_ritiro || !r.luogo_consegna){
-  messaggio.textContent =
-   "Impossibile creare il trasporto: mancano veicolo, ritiro o consegna.";
+  messaggio.textContent=
+   "Mancano veicolo, luogo di ritiro o luogo di consegna.";
   return;
  }
 
- const conferma = confirm(
-  "Vuoi trasformare questa richiesta in un nuovo trasporto?"
- );
+ if(!confirm("Vuoi creare il trasporto e collegarlo al cliente?")){
+  return;
+ }
 
- if(!conferma) return;
-
- pulsante.disabled = true;
- pulsante.textContent = "CREAZIONE IN CORSO...";
+ pulsante.disabled=true;
+ pulsante.textContent="CREAZIONE IN CORSO...";
 
  try{
 
-  const noteTrasporto = [
-   "CLIENTE: " + (r.nome || "Non indicato"),
-   "TELEFONO: " + (r.telefono || "Non indicato"),
-   "EMAIL: " + (r.email || "Non indicata"),
-   "DATA RICHIESTA: " + (r.data_ritiro || "Non indicata"),
-   "NOTE CLIENTE: " + (r.note || "Nessuna")
+  messaggio.textContent="Ricerca della scheda cliente...";
+
+  const clienteId=await trovaOCreaCliente(r);
+
+  const noteTrasporto=[
+   "CLIENTE: "+(r.nome||"Non indicato"),
+   "TELEFONO: "+(r.telefono||"Non indicato"),
+   "EMAIL: "+(r.email||"Non indicata"),
+   "DATA RICHIESTA: "+(r.data_ritiro||"Non indicata"),
+   "NOTE CLIENTE: "+(r.note||"Nessuna")
   ].join("\n");
 
-  const {data:trasporto, error:erroreInserimento} = await client
+  messaggio.textContent="Creazione del trasporto...";
+
+  const {data:trasporto,error:erroreInserimento}=await client
    .from("richieste")
    .insert({
-    veicolo: r.veicolo,
-    targa: r.targa || null,
-    luogo_ritiro: r.luogo_ritiro,
-    luogo_consegna: r.luogo_consegna,
-    note: noteTrasporto,
-    modalita_prezzo: "km"
+    cliente_anagrafica_id:clienteId,
+    veicolo:r.veicolo,
+    targa:r.targa||null,
+    luogo_ritiro:r.luogo_ritiro,
+    luogo_consegna:r.luogo_consegna,
+    note:noteTrasporto,
+    modalita_prezzo:"km"
    })
    .select("id")
    .single();
 
   if(erroreInserimento) throw erroreInserimento;
 
-  const {error:erroreAggiornamento} = await client
+  const {error:erroreAggiornamento}=await client
    .from("richieste_clienti")
    .update({
-    trasporto_id: trasporto.id,
-    stato: "In lavorazione"
+    trasporto_id:trasporto.id,
+    stato:"In lavorazione"
    })
    .eq("id",r.id)
    .is("trasporto_id",null);
 
   if(erroreAggiornamento){
    throw new Error(
-    "Il trasporto è stato creato, ma non è stato possibile collegarlo alla richiesta. ID trasporto: " +
-    trasporto.id + ". " + erroreAggiornamento.message
+    "Trasporto creato, ma collegamento alla richiesta non completato. ID trasporto: "+
+    trasporto.id+". "+erroreAggiornamento.message
    );
   }
 
-  messaggio.textContent = "Trasporto creato correttamente!";
+  messaggio.textContent=
+   "Trasporto creato e collegato correttamente al cliente!";
 
   await caricaRichieste();
 
  }catch(error){
 
-  console.error("Errore creazione trasporto:",error);
+  console.error("Errore:",error);
+  messaggio.textContent="Errore: "+error.message;
 
-  messaggio.textContent = "Errore: " + error.message;
-
-  pulsante.disabled = false;
-  pulsante.textContent = "CREA TRASPORTO";
+  pulsante.disabled=false;
+  pulsante.textContent="CREA TRASPORTO";
 
  }
 
 }
 
+/* CARICAMENTO RICHIESTE */
+
 async function caricaRichieste(){
 
  elenco.replaceChildren();
- messaggio.textContent = "Caricamento richieste...";
+ messaggio.textContent="Caricamento richieste...";
 
  try{
 
-  const {data, error} = await client
+  const {data,error}=await client
    .from("richieste_clienti")
    .select("*")
    .order("created_at",{ascending:false});
 
   if(error) throw error;
 
-  if(!data || data.length === 0){
-   messaggio.textContent = "";
+  if(!data||data.length===0){
+   messaggio.textContent="";
    elenco.appendChild(
     creaElemento("div","Non ci sono ancora richieste ricevute.","empty")
    );
    return;
   }
 
-  messaggio.textContent = "Richieste ricevute: " + data.length;
+  messaggio.textContent="Richieste ricevute: "+data.length;
 
-  data.forEach(r => {
+  data.forEach(r=>{
 
-   const card = creaElemento("div",null,"card");
+   const card=creaElemento("div",null,"card");
 
    card.appendChild(
-    creaElemento("h3",r.nome || "Cliente")
+    creaElemento("h3",r.nome||"Cliente")
    );
 
    card.appendChild(
@@ -338,27 +316,27 @@ async function caricaRichieste(){
    campo(card,"Note",r.note);
 
    if(r.telefono){
-    const contatto = document.createElement("div");
-    contatto.style.marginTop = "12px";
+    const contatto=document.createElement("div");
+    contatto.style.marginTop="12px";
     aggiungiLink(contatto,"☎ CHIAMA CLIENTE","tel:"+r.telefono);
     card.appendChild(contatto);
    }
 
    if(r.email){
-    const emailBox = document.createElement("div");
-    emailBox.style.marginTop = "10px";
+    const emailBox=document.createElement("div");
+    emailBox.style.marginTop="10px";
     aggiungiLink(emailBox,"✉ INVIA EMAIL","mailto:"+r.email);
     card.appendChild(emailBox);
    }
 
-   const converti = creaElemento(
+   const converti=creaElemento(
     "button",
-    r.trasporto_id ? "TRASPORTO CREATO ✓" : "CREA TRASPORTO",
-    r.trasporto_id ? "convertito" : "converti"
+    r.trasporto_id?"TRASPORTO CREATO ✓":"CREA TRASPORTO",
+    r.trasporto_id?"convertito":"converti"
    );
 
    if(r.trasporto_id){
-    converti.disabled = true;
+    converti.disabled=true;
    }else{
     converti.addEventListener("click",function(){
      creaTrasporto(r,converti);
@@ -367,57 +345,58 @@ async function caricaRichieste(){
 
    card.appendChild(converti);
 
-   const statoBox = creaElemento("div",null,"stato");
+   const statoBox=creaElemento("div",null,"stato");
+
    statoBox.appendChild(
     creaElemento("strong","STATO RICHIESTA")
    );
 
-   const selezione = document.createElement("select");
+   const selezione=document.createElement("select");
 
-   const stati = [
+   const stati=[
     "Nuova",
     "In lavorazione",
     "Accettata",
     "Rifiutata"
    ];
 
-   stati.forEach(stato => {
-    const option = document.createElement("option");
-    option.value = stato;
-    option.textContent = stato;
+   stati.forEach(stato=>{
+    const option=document.createElement("option");
+    option.value=stato;
+    option.textContent=stato;
     selezione.appendChild(option);
    });
 
-   selezione.value = stati.includes(r.stato) ? r.stato : "Nuova";
+   selezione.value=stati.includes(r.stato)?r.stato:"Nuova";
 
-   const salva = creaElemento("button","SALVA STATO");
-   salva.style.marginTop = "10px";
+   const salva=creaElemento("button","SALVA STATO");
+   salva.style.marginTop="10px";
 
    salva.addEventListener("click",async function(){
 
-    salva.disabled = true;
-    salva.textContent = "SALVATAGGIO...";
+    salva.disabled=true;
+    salva.textContent="SALVATAGGIO...";
 
     try{
 
-     const {error} = await client
+     const {error}=await client
       .from("richieste_clienti")
       .update({stato:selezione.value})
       .eq("id",r.id);
 
      if(error) throw error;
 
-     salva.textContent = "SALVATO ✓";
-     messaggio.textContent = "Stato aggiornato correttamente.";
+     salva.textContent="SALVATO ✓";
+     messaggio.textContent="Stato aggiornato correttamente.";
 
     }catch(error){
 
      console.error(error);
-     salva.textContent = "RIPROVA";
-     messaggio.textContent = "Errore: "+error.message;
+     salva.textContent="RIPROVA";
+     messaggio.textContent="Errore: "+error.message;
 
     }finally{
-     salva.disabled = false;
+     salva.disabled=false;
     }
 
    });
@@ -434,7 +413,7 @@ async function caricaRichieste(){
  }catch(error){
 
   console.error("Errore caricamento:",error);
-  messaggio.textContent = "Errore: "+error.message;
+  messaggio.textContent="Errore: "+error.message;
 
  }
 
@@ -442,10 +421,10 @@ async function caricaRichieste(){
 
 async function avvia(){
 
- const {data,error} = await client.auth.getSession();
+ const {data,error}=await client.auth.getSession();
 
- if(error || !data.session){
-  window.location.href = "./login.html";
+ if(error||!data.session){
+  window.location.href="./login.html";
   return;
  }
 
@@ -461,4 +440,5 @@ avvia();
 
 </body>
 </html>
+
 
