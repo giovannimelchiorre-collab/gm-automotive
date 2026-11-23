@@ -100,7 +100,9 @@ let modificaId=null;
 function aggiornaModalitaPrezzo(){
  const modalita=document.getElementById('modalitaPrezzo').value;
  const tariffa=document.getElementById('tariffa');
- const prezzo=document.getElementById('prezzo');
+ prezzo:document.getElementById('prezzo').value===''?null:Number(document.getElementById('prezzo').value),
+tariffa_km:document.getElementById('tariffa').value===''?null:Number(document.getElementById('tariffa').value),
+modalita_prezzo:document.getElementById('modalitaPrezzo').value,
 
  if(modalita==='km'){
   tariffa.parentElement.style.display='block';
