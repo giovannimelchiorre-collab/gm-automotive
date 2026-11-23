@@ -56,10 +56,16 @@ button,.home{
  text-decoration:none;
 }
 
+button:disabled{
+ opacity:.55;
+ cursor:not-allowed;
+}
+
 #messaggio{
  text-align:center;
  margin:15px 0;
  color:#d4af55;
+ overflow-wrap:anywhere;
 }
 
 .card{
@@ -103,6 +109,26 @@ select{
 
 .stato{
  margin-top:15px;
+}
+
+.converti{
+ display:block;
+ width:100%;
+ margin-top:18px;
+ padding:15px;
+ background:#d4af55;
+ color:#111;
+ font-size:15px;
+}
+
+.convertito{
+ display:block;
+ width:100%;
+ margin-top:18px;
+ padding:15px;
+ background:#245b3a;
+ color:white;
+ cursor:default;
 }
 
 .data{
@@ -186,6 +212,86 @@ function dataFormattata(data){
  return new Date(data).toLocaleString("it-IT");
 }
 
+async function creaTrasporto(r, pulsante){
+
+ if(r.trasporto_id){
+  messaggio.textContent = "Questa richiesta è già stata trasformata in trasporto.";
+  return;
+ }
+
+ if(!r.veicolo || !r.luogo_ritiro || !r.luogo_consegna){
+  messaggio.textContent =
+   "Impossibile creare il trasporto: mancano veicolo, ritiro o consegna.";
+  return;
+ }
+
+ const conferma = confirm(
+  "Vuoi trasformare questa richiesta in un nuovo trasporto?"
+ );
+
+ if(!conferma) return;
+
+ pulsante.disabled = true;
+ pulsante.textContent = "CREAZIONE IN CORSO...";
+
+ try{
+
+  const noteTrasporto = [
+   "CLIENTE: " + (r.nome || "Non indicato"),
+   "TELEFONO: " + (r.telefono || "Non indicato"),
+   "EMAIL: " + (r.email || "Non indicata"),
+   "DATA RICHIESTA: " + (r.data_ritiro || "Non indicata"),
+   "NOTE CLIENTE: " + (r.note || "Nessuna")
+  ].join("\n");
+
+  const {data:trasporto, error:erroreInserimento} = await client
+   .from("richieste")
+   .insert({
+    veicolo: r.veicolo,
+    targa: r.targa || null,
+    luogo_ritiro: r.luogo_ritiro,
+    luogo_consegna: r.luogo_consegna,
+    note: noteTrasporto,
+    modalita_prezzo: "km"
+   })
+   .select("id")
+   .single();
+
+  if(erroreInserimento) throw erroreInserimento;
+
+  const {error:erroreAggiornamento} = await client
+   .from("richieste_clienti")
+   .update({
+    trasporto_id: trasporto.id,
+    stato: "In lavorazione"
+   })
+   .eq("id",r.id)
+   .is("trasporto_id",null);
+
+  if(erroreAggiornamento){
+   throw new Error(
+    "Il trasporto è stato creato, ma non è stato possibile collegarlo alla richiesta. ID trasporto: " +
+    trasporto.id + ". " + erroreAggiornamento.message
+   );
+  }
+
+  messaggio.textContent = "Trasporto creato correttamente!";
+
+  await caricaRichieste();
+
+ }catch(error){
+
+  console.error("Errore creazione trasporto:",error);
+
+  messaggio.textContent = "Errore: " + error.message;
+
+  pulsante.disabled = false;
+  pulsante.textContent = "CREA TRASPORTO";
+
+ }
+
+}
+
 async function caricaRichieste(){
 
  elenco.replaceChildren();
@@ -244,6 +350,22 @@ async function caricaRichieste(){
     aggiungiLink(emailBox,"✉ INVIA EMAIL","mailto:"+r.email);
     card.appendChild(emailBox);
    }
+
+   const converti = creaElemento(
+    "button",
+    r.trasporto_id ? "TRASPORTO CREATO ✓" : "CREA TRASPORTO",
+    r.trasporto_id ? "convertito" : "converti"
+   );
+
+   if(r.trasporto_id){
+    converti.disabled = true;
+   }else{
+    converti.addEventListener("click",function(){
+     creaTrasporto(r,converti);
+    });
+   }
+
+   card.appendChild(converti);
 
    const statoBox = creaElemento("div",null,"stato");
    statoBox.appendChild(
@@ -339,3 +461,4 @@ avvia();
 
 </body>
 </html>
+
