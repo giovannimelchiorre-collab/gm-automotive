@@ -204,10 +204,9 @@ form.addEventListener("submit", async function(e){
 
   messaggio.style.color = "#ff7777";
   messaggio.textContent =
-   messaggio.textContent =
-   "ERRORE: " + (error.message || JSON.stringify(error));la richiesta. Riprova tra poco.";
+   "ERRORE: " + (error.message || JSON.stringify(error));
 
- }finally{
+}finally{
 
   bottone.disabled = false;
   bottone.textContent = "INVIA RICHIESTA";
