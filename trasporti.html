@@ -123,7 +123,9 @@ function calcolaPrezzo(){
   document.getElementById('prezzo').value='';
   return;
  }
-
+document.getElementById('tariffa').value=data.tariffa_km ?? '';
+document.getElementById('modalitaPrezzo').value=data.modalita_prezzo || 'km';
+aggiornaModalitaPrezzo();
  document.getElementById('prezzo').value=
   (Number(km)*Number(tariffa)).toFixed(2);
 }
