@@ -93,6 +93,23 @@ const SUPABASE_KEY='sb_publishable_ya3B1_8f4nh5J4sokWhCHw_6mzOjWWv';
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 let modificaId=null;
+ function calcolaPrezzo(){
+ const km=Number(document.getElementById('distanza').value);
+ const tariffa=Number(document.getElementById('tariffa').value);
+
+ if(
+  document.getElementById('distanza').value==='' ||
+  document.getElementById('tariffa').value===''
+ ){
+  document.getElementById('prezzo').value='';
+  return;
+ }
+
+ document.getElementById('prezzo').value=(km*tariffa).toFixed(2);
+}
+
+document.getElementById('distanza').addEventListener('input',calcolaPrezzo);
+document.getElementById('tariffa').addEventListener('input',calcolaPrezzo);
 
 const form=document.getElementById('formTrasporto');
 const msg=document.getElementById('messaggio');
