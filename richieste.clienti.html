@@ -1,0 +1,341 @@
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101010">
+<title>Richieste Clienti - G.M. Automotive</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+ margin:0;
+ padding:20px;
+ background:#101010;
+ color:white;
+ font-family:Arial,sans-serif;
+}
+
+.container{
+ max-width:1100px;
+ margin:20px auto;
+}
+
+h1{
+ color:#d4af55;
+ text-align:center;
+}
+
+.subtitle{
+ text-align:center;
+ color:#aaa;
+ margin-bottom:25px;
+}
+
+.top{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ gap:10px;
+ flex-wrap:wrap;
+ margin-bottom:20px;
+}
+
+button,.home{
+ border:0;
+ border-radius:7px;
+ padding:12px 17px;
+ background:#d4af55;
+ color:#111;
+ font-weight:bold;
+ cursor:pointer;
+ text-decoration:none;
+}
+
+#messaggio{
+ text-align:center;
+ margin:15px 0;
+ color:#d4af55;
+}
+
+.card{
+ background:#191919;
+ border:1px solid #806b36;
+ border-radius:12px;
+ padding:18px;
+ margin-bottom:15px;
+}
+
+.card h3{
+ color:#d4af55;
+ margin-top:0;
+}
+
+.info{
+ line-height:1.8;
+ overflow-wrap:anywhere;
+}
+
+.info strong{
+ color:#d4af55;
+}
+
+.link{
+ color:#d4af55;
+ text-decoration:none;
+}
+
+select{
+ width:100%;
+ max-width:300px;
+ padding:11px;
+ margin-top:8px;
+ background:#101010;
+ color:white;
+ border:1px solid #b99a45;
+ border-radius:7px;
+ font-size:15px;
+}
+
+.stato{
+ margin-top:15px;
+}
+
+.data{
+ color:#999;
+ font-size:13px;
+}
+
+.empty{
+ text-align:center;
+ padding:35px;
+ color:#aaa;
+ background:#191919;
+ border-radius:10px;
+}
+
+@media(max-width:600px){
+ body{padding:12px}
+ .card{padding:14px}
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>G.M. AUTOMOTIVE</h1>
+<p class="subtitle">GESTIONE RICHIESTE CLIENTI</p>
+
+<div class="top">
+ <a class="home" href="./index.html">← HOME</a>
+ <button id="aggiorna">AGGIORNA RICHIESTE</button>
+</div>
+
+<div id="messaggio">Caricamento...</div>
+<div id="elenco"></div>
+
+</div>
+
+<script>
+const SUPABASE_URL = "https://amnibfcgruniqzvjoaxn.supabase.co";
+const SUPABASE_KEY = "sb_publishable_ya3B1_8f4nh5J4sokWhCHw_6mzOjWWv";
+
+const client = window.supabase.createClient(
+ SUPABASE_URL,
+ SUPABASE_KEY
+);
+
+const elenco = document.getElementById("elenco");
+const messaggio = document.getElementById("messaggio");
+
+function creaElemento(tag, testo, classe){
+ const el = document.createElement(tag);
+ if(testo !== null) el.textContent = testo;
+ if(classe) el.className = classe;
+ return el;
+}
+
+function campo(contenitore, etichetta, valore){
+ const riga = document.createElement("div");
+ riga.className = "info";
+
+ const strong = document.createElement("strong");
+ strong.textContent = etichetta + ": ";
+
+ riga.appendChild(strong);
+ riga.appendChild(document.createTextNode(valore || "Non indicato"));
+ contenitore.appendChild(riga);
+}
+
+function aggiungiLink(contenitore, testo, url){
+ const a = document.createElement("a");
+ a.className = "link";
+ a.href = url;
+ a.textContent = testo;
+ contenitore.appendChild(a);
+}
+
+function dataFormattata(data){
+ if(!data) return "Data non disponibile";
+ return new Date(data).toLocaleString("it-IT");
+}
+
+async function caricaRichieste(){
+
+ elenco.replaceChildren();
+ messaggio.textContent = "Caricamento richieste...";
+
+ try{
+
+  const {data, error} = await client
+   .from("richieste_clienti")
+   .select("*")
+   .order("created_at",{ascending:false});
+
+  if(error) throw error;
+
+  if(!data || data.length === 0){
+   messaggio.textContent = "";
+   elenco.appendChild(
+    creaElemento("div","Non ci sono ancora richieste ricevute.","empty")
+   );
+   return;
+  }
+
+  messaggio.textContent = "Richieste ricevute: " + data.length;
+
+  data.forEach(r => {
+
+   const card = creaElemento("div",null,"card");
+
+   card.appendChild(
+    creaElemento("h3",r.nome || "Cliente")
+   );
+
+   card.appendChild(
+    creaElemento("div","Ricevuta il: "+dataFormattata(r.created_at),"data")
+   );
+
+   campo(card,"Telefono",r.telefono);
+   campo(card,"Email",r.email);
+   campo(card,"Veicolo",r.veicolo);
+   campo(card,"Targa",r.targa);
+   campo(card,"Ritiro",r.luogo_ritiro);
+   campo(card,"Consegna",r.luogo_consegna);
+   campo(card,"Data richiesta",r.data_ritiro);
+   campo(card,"Note",r.note);
+
+   if(r.telefono){
+    const contatto = document.createElement("div");
+    contatto.style.marginTop = "12px";
+    aggiungiLink(contatto,"☎ CHIAMA CLIENTE","tel:"+r.telefono);
+    card.appendChild(contatto);
+   }
+
+   if(r.email){
+    const emailBox = document.createElement("div");
+    emailBox.style.marginTop = "10px";
+    aggiungiLink(emailBox,"✉ INVIA EMAIL","mailto:"+r.email);
+    card.appendChild(emailBox);
+   }
+
+   const statoBox = creaElemento("div",null,"stato");
+   statoBox.appendChild(
+    creaElemento("strong","STATO RICHIESTA")
+   );
+
+   const selezione = document.createElement("select");
+
+   const stati = [
+    "Nuova",
+    "In lavorazione",
+    "Accettata",
+    "Rifiutata"
+   ];
+
+   stati.forEach(stato => {
+    const option = document.createElement("option");
+    option.value = stato;
+    option.textContent = stato;
+    selezione.appendChild(option);
+   });
+
+   selezione.value = stati.includes(r.stato) ? r.stato : "Nuova";
+
+   const salva = creaElemento("button","SALVA STATO");
+   salva.style.marginTop = "10px";
+
+   salva.addEventListener("click",async function(){
+
+    salva.disabled = true;
+    salva.textContent = "SALVATAGGIO...";
+
+    try{
+
+     const {error} = await client
+      .from("richieste_clienti")
+      .update({stato:selezione.value})
+      .eq("id",r.id);
+
+     if(error) throw error;
+
+     salva.textContent = "SALVATO ✓";
+     messaggio.textContent = "Stato aggiornato correttamente.";
+
+    }catch(error){
+
+     console.error(error);
+     salva.textContent = "RIPROVA";
+     messaggio.textContent = "Errore: "+error.message;
+
+    }finally{
+     salva.disabled = false;
+    }
+
+   });
+
+   statoBox.appendChild(selezione);
+   statoBox.appendChild(document.createElement("br"));
+   statoBox.appendChild(salva);
+   card.appendChild(statoBox);
+
+   elenco.appendChild(card);
+
+  });
+
+ }catch(error){
+
+  console.error("Errore caricamento:",error);
+  messaggio.textContent = "Errore: "+error.message;
+
+ }
+
+}
+
+async function avvia(){
+
+ const {data,error} = await client.auth.getSession();
+
+ if(error || !data.session){
+  window.location.href = "./login.html";
+  return;
+ }
+
+ caricaRichieste();
+}
+
+document.getElementById("aggiorna").addEventListener(
+ "click",caricaRichieste
+);
+
+avvia();
+</script>
+
+</body>
+</html>
