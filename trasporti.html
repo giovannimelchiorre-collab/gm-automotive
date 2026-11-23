@@ -6,327 +6,530 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#101010">
 <title>Trasporti - G.M. Automotive</title>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#101010;color:white;font-family:Arial,sans-serif;padding:18px}
-header{text-align:center;color:#d4af37;font-size:25px;font-weight:bold;padding:20px}
-main{max-width:850px;margin:auto}
-.card{background:#1b1b1b;border:1px solid #8d7025;border-radius:12px;padding:20px;margin-bottom:20px}
-h2{color:#d4af37;margin-top:0}
-label{display:block;margin-top:14px;color:#d4af37}
-input,select,textarea{width:100%;padding:12px;margin-top:6px;background:#292929;color:white;border:1px solid #555;border-radius:7px;font-size:16px}
-button{padding:12px;margin-top:12px;background:#d4af37;color:#111;border:0;border-radius:7px;font-weight:bold;font-size:14px;cursor:pointer}
-button:disabled{opacity:.5}
-.second{background:#444;color:white}
-.danger{background:#a83232;color:white}
-.home{display:inline-block;color:#d4af37;text-decoration:none;margin-bottom:18px}
-.item{border:1px solid #554522;border-radius:9px;padding:15px;margin-top:13px;background:#222}
-.item h3{color:#d4af37;margin:0 0 10px}
-.item p{margin:6px 0;color:#ddd;font-size:14px;overflow-wrap:anywhere}
-.actions{display:flex;gap:8px;flex-wrap:wrap}
-.actions button{flex:1}
-#messaggio{text-align:center;margin-top:14px}
-small{color:#aaa}
+
+body{
+ margin:0;
+ padding:20px;
+ background:#101010;
+ color:white;
+ font-family:Arial,sans-serif;
+}
+
+.container{
+ max-width:950px;
+ margin:auto;
+}
+
+header{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ gap:12px;
+ flex-wrap:wrap;
+ margin-bottom:25px;
+}
+
+h1,h2{color:#d4af37}
+
+h1{font-size:25px;margin:0}
+h2{font-size:21px}
+
+a.home{
+ color:#d4af37;
+ text-decoration:none;
+ border:1px solid #d4af37;
+ padding:10px 14px;
+ border-radius:8px;
+}
+
+.card{
+ background:#1b1b1b;
+ border:1px solid #806b2a;
+ border-radius:12px;
+ padding:20px;
+ margin-bottom:22px;
+}
+
+label{
+ display:block;
+ margin:14px 0 6px;
+ color:#d4af37;
+ font-weight:bold;
+}
+
+input,select,textarea{
+ width:100%;
+ padding:12px;
+ border:1px solid #555;
+ border-radius:7px;
+ background:#292929;
+ color:white;
+ font-size:16px;
+}
+
+textarea{
+ min-height:75px;
+ resize:vertical;
+}
+
+button{
+ border:0;
+ border-radius:7px;
+ padding:12px 16px;
+ font-size:15px;
+ font-weight:bold;
+ cursor:pointer;
+}
+
+.salva{
+ background:#d4af37;
+ color:#111;
+ width:100%;
+ margin-top:20px;
+}
+
+.secondario{
+ background:#333;
+ color:white;
+ border:1px solid #777;
+}
+
+.modifica{
+ background:#d4af37;
+ color:#111;
+}
+
+.elimina{
+ background:#a83232;
+ color:white;
+}
+
+.trasporto{
+ border:1px solid #555;
+ border-radius:9px;
+ padding:15px;
+ margin-top:13px;
+ background:#222;
+}
+
+.trasporto strong{color:#d4af37}
+
+.azioni{
+ display:flex;
+ gap:9px;
+ flex-wrap:wrap;
+ margin-top:13px;
+}
+
+.azioni button{flex:1}
+
+.nascosto{display:none}
+
+#messaggio{
+ margin-top:12px;
+ color:#d4af37;
+ white-space:pre-wrap;
+}
+
+#elenco{margin-top:15px}
+
+@media(max-width:600px){
+ body{padding:13px}
+ .card{padding:15px}
+ header{align-items:flex-start}
+}
 </style>
 </head>
 
 <body>
-<header>G.M. AUTOMOTIVE<br><small>GESTIONE TRASPORTI</small></header>
+<div class="container">
 
-<main>
-<a class="home" href="./index.html">← TORNA ALLA HOME</a>
+<header>
+ <h1>G.M. AUTOMOTIVE</h1>
+ <a class="home" href="./index.html">← Home</a>
+</header>
 
-<div class="card">
-<h2 id="titoloForm">Nuovo trasporto</h2>
+<div class="card" id="formCard">
+ <h2 id="titoloForm">Nuovo trasporto</h2>
 
-<form id="formTrasporto">
-<label>Veicolo</label>
-<input id="veicolo" required>
+ <form id="formTrasporto">
 
-<label>Targa</label>
-<input id="targa">
+  <label for="veicolo">Veicolo</label>
+  <input id="veicolo" type="text" placeholder="Marca e modello">
 
-<label>Luogo di ritiro</label>
-<input id="ritiro" required>
+  <label for="targa">Targa</label>
+  <input id="targa" type="text" placeholder="Targa">
 
-<label>Luogo di consegna</label>
-<input id="consegna" required>
+  <label for="ritiro">Luogo di ritiro</label>
+  <input id="ritiro" type="text" placeholder="Indirizzo di ritiro">
 
-<label>Distanza (km)</label>
-<input id="distanza" type="number" min="0" step="0.1">
-<label>Modalità prezzo</label>
-<select id="modalitaPrezzo">
-<option value="km">Prezzo al km</option>
-<option value="libero">Tariffa libera</option>
-</select>
-<label>Tariffa al km (€)</label>
-<input id="tariffa" type="number" min="0" step="0.01" placeholder="Inserisci tariffa al km">
+  <label for="consegna">Luogo di consegna</label>
+  <input id="consegna" type="text" placeholder="Indirizzo di consegna">
 
-<label>Prezzo (€) - Calcolato automaticamente</label>
-<input id="prezzo" type="number" min="0" step="0.01" readonly>
+  <label for="distanza">Distanza (km)</label>
+  <input id="distanza" type="number" min="0" step="0.1" placeholder="Es. 250">
 
-<label>Stato</label>
-<select id="stato">
-<option value="Da assegnare">Da assegnare</option>
-<option value="In programma">In programma</option>
-<option value="In corso">In corso</option>
-<option value="Completato">Completato</option>
-</select>
+  <label for="modalitaPrezzo">Modalità prezzo</label>
+  <select id="modalitaPrezzo">
+   <option value="km">Prezzo al km</option>
+   <option value="libero">Tariffa libera</option>
+  </select>
 
-<label>Note</label>
-<textarea id="note" rows="3"></textarea>
+  <div id="tariffaField">
+   <label for="tariffa">Tariffa al km (€)</label>
+   <input id="tariffa" type="number" min="0" step="0.01" placeholder="Es. 1.20">
+  </div>
 
-<button type="submit" id="salva">SALVA TRASPORTO</button>
-<button type="button" class="second" id="annulla" hidden>ANNULLA MODIFICA</button>
-<div id="messaggio"></div>
-</form>
+  <label for="prezzo">Prezzo totale (€)</label>
+  <input id="prezzo" type="number" min="0" step="0.01" placeholder="Prezzo totale">
+
+  <label for="stato">Stato</label>
+  <select id="stato">
+   <option value="Da effettuare">Da effettuare</option>
+   <option value="In corso">In corso</option>
+   <option value="Completato">Completato</option>
+  </select>
+
+  <label for="note">Note</label>
+  <textarea id="note" placeholder="Note sul trasporto"></textarea>
+
+  <button class="salva" id="pulsanteSalva" type="submit">
+   SALVA TRASPORTO
+  </button>
+
+  <button class="secondario nascosto" id="annullaModifica" type="button"
+   style="width:100%;margin-top:10px" onclick="resetForm()">
+   ANNULLA MODIFICA
+  </button>
+
+  <div id="messaggio"></div>
+ </form>
 </div>
 
 <div class="card">
-<h2>Elenco trasporti</h2>
-<button type="button" class="second" id="aggiorna">AGGIORNA ELENCO</button>
-<div id="elenco"><small>Caricamento...</small></div>
+ <h2>Elenco trasporti</h2>
+ <div id="elenco">Caricamento...</div>
 </div>
-</main>
+
+</div>
 
 <script>
-const SUPABASE_URL='https://amnibfcgruniqzvjoaxn.supabase.co';
-const SUPABASE_KEY='sb_publishable_ya3B1_8f4nh5J4sokWhCHw_6mzOjWWv';
-const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const SUPABASE_URL = 'https://amnibfcgruniqzvjoaxn.supabase.co';
 
-let modificaId=null;
+const SUPABASE_KEY = 'sb_publishable_ya3B1_8f4nh5J4sokWhCHw_6mzOjWWv';
+
+const db = window.supabase.createClient(
+ SUPABASE_URL,
+ SUPABASE_KEY
+);
+
+let modificaId = null;
+
+const $ = id => document.getElementById(id);
+
+function mostraMessaggio(testo){
+ $('messaggio').textContent = testo;
+}
+
+function escapeHtml(valore){
+ return String(valore ?? '').replace(/[&<>"']/g, carattere => ({
+  '&':'&amp;',
+  '<':'&lt;',
+  '>':'&gt;',
+  '"':'&quot;',
+  "'":'&#039;'
+ })[carattere]);
+}
+
 function aggiornaModalitaPrezzo(){
- const modalita=document.getElementById('modalitaPrezzo').value;
- const tariffa=document.getElementById('tariffa');
- prezzo:document.getElementById('prezzo').value===''?null:Number(document.getElementById('prezzo').value),
-tariffa_km:document.getElementById('tariffa').value===''?null:Number(document.getElementById('tariffa').value),
-modalita_prezzo:document.getElementById('modalitaPrezzo').value,
+ const modalita = $('modalitaPrezzo').value;
+ const tariffaField = $('tariffaField');
+ const prezzo = $('prezzo');
 
- if(modalita==='km'){
-  tariffa.parentElement.style.display='block';
-  prezzo.readOnly=true;
+ if(modalita === 'km'){
+  tariffaField.classList.remove('nascosto');
+  prezzo.readOnly = true;
+  prezzo.placeholder = 'Calcolo automatico';
   calcolaPrezzo();
  }else{
-  tariffa.parentElement.style.display='none';
-  prezzo.readOnly=false;
-  prezzo.value='';
+  tariffaField.classList.add('nascosto');
+  prezzo.readOnly = false;
+  prezzo.placeholder = 'Inserisci il prezzo manualmente';
  }
 }
 
 function calcolaPrezzo(){
- const km=document.getElementById('distanza').value;
- const tariffa=document.getElementById('tariffa').value;
+ if($('modalitaPrezzo').value !== 'km') return;
 
- if(km==='' || tariffa===''){
-  document.getElementById('prezzo').value='';
-  return;
- }
-document.getElementById('tariffa').value=data.tariffa_km ?? '';
-document.getElementById('modalitaPrezzo').value=data.modalita_prezzo || 'km';
-aggiornaModalitaPrezzo();
- document.getElementById('prezzo').value=
-  (Number(km)*Number(tariffa)).toFixed(2);
-}
+ const km = parseFloat($('distanza').value);
+ const tariffa = parseFloat($('tariffa').value);
 
-document.getElementById('distanza').addEventListener('input',calcolaPrezzo);
-document.getElementById('tariffa').addEventListener('input',calcolaPrezzo);
-document.getElementById('modalitaPrezzo').addEventListener('change',aggiornaModalitaPrezzo);
-
-aggiornaModalitaPrezzo();
-
- if(
-  document.getElementById('distanza').value==='' ||
-  document.getElementById('tariffa').value===''
- ){
-  document.getElementById('prezzo').value='';
+ if(!Number.isFinite(km) || !Number.isFinite(tariffa)){
+  $('prezzo').value = '';
   return;
  }
 
- document.getElementById('prezzo').value=(km*tariffa).toFixed(2);
-}
-
-document.getElementById('distanza').addEventListener('input',calcolaPrezzo);
-document.getElementById('tariffa').addEventListener('input',calcolaPrezzo);
-
-const form=document.getElementById('formTrasporto');
-const msg=document.getElementById('messaggio');
-const elenco=document.getElementById('elenco');
-
-function escapeHtml(value){
- return String(value ?? '').replace(/[&<>"']/g,function(c){
-  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
- });
-}
-
-async function controlloAccesso(){
- const {data,error}=await db.auth.getSession();
- if(error || !data.session){
-  location.href='login.html';
-  return false;
- }
- return true;
+ $('prezzo').value = (km * tariffa).toFixed(2);
 }
 
 function leggiDati(){
+ const modalita = $('modalitaPrezzo').value;
+ const prezzo = $('prezzo').value;
+
  return {
-  veicolo:document.getElementById('veicolo').value.trim(),
-  targa:document.getElementById('targa').value.trim(),
-  luogo_ritiro:document.getElementById('ritiro').value.trim(),
-  luogo_consegna:document.getElementById('consegna').value.trim(),
-  distanza_km:document.getElementById('distanza').value===''?null:Number(document.getElementById('distanza').value),
-  prezzo:document.getElementById('prezzo').value===''?null:Number(document.getElementById('prezzo').value),
-  stato:document.getElementById('stato').value,
-  note:document.getElementById('note').value.trim()
+  veicolo: $('veicolo').value.trim(),
+  targa: $('targa').value.trim(),
+  luogo_ritiro: $('ritiro').value.trim(),
+  luogo_consegna: $('consegna').value.trim(),
+  distanza_km: $('distanza').value === ''
+   ? null : Number($('distanza').value),
+  prezzo: prezzo === '' ? null : Number(prezzo),
+  tariffa_km: modalita === 'km' && $('tariffa').value !== ''
+   ? Number($('tariffa').value) : null,
+  modalita_prezzo: modalita,
+  stato: $('stato').value,
+  note: $('note').value.trim()
  };
 }
 
 function resetForm(){
- form.reset();
- modificaId=null;
- document.getElementById('titoloForm').textContent='Nuovo trasporto';
- document.getElementById('salva').textContent='SALVA TRASPORTO';
- document.getElementById('annulla').hidden=true;
+ modificaId = null;
+ $('formTrasporto').reset();
+ $('titoloForm').textContent = 'Nuovo trasporto';
+ $('pulsanteSalva').textContent = 'SALVA TRASPORTO';
+ $('annullaModifica').classList.add('nascosto');
+ $('prezzo').readOnly = true;
+ aggiornaModalitaPrezzo();
+ mostraMessaggio('');
 }
 
-form.addEventListener('submit',async function(e){
- e.preventDefault();
+$('modalitaPrezzo').addEventListener('change', aggiornaModalitaPrezzo);
+$('distanza').addEventListener('input', calcolaPrezzo);
+$('tariffa').addEventListener('input', calcolaPrezzo);
 
- const bottone=document.getElementById('salva');
- bottone.disabled=true;
- msg.textContent='Salvataggio in corso...';
+$('formTrasporto').addEventListener('submit', async function(event){
+ event.preventDefault();
+ mostraMessaggio('');
+
+ const dati = leggiDati();
+
+ if(dati.modalita_prezzo === 'km'){
+  if(dati.distanza_km === null || dati.tariffa_km === null){
+   mostraMessaggio('Inserisci distanza e tariffa al km.');
+   return;
+  }
+  dati.prezzo = dati.distanza_km * dati.tariffa_km;
+ }else{
+  if(dati.prezzo === null || dati.prezzo < 0){
+   mostraMessaggio('Inserisci un prezzo valido.');
+   return;
+  }
+ }
+
+ if(dati.distanza_km !== null && dati.distanza_km < 0){
+  mostraMessaggio('La distanza non può essere negativa.');
+  return;
+ }
+
+ if(dati.prezzo < 0){
+  mostraMessaggio('Il prezzo non può essere negativo.');
+  return;
+ }
+
+ $('pulsanteSalva').disabled = true;
+ $('pulsanteSalva').textContent = 'SALVATAGGIO...';
 
  try{
-  if(!await controlloAccesso())return;
-
-  const record=leggiDati();
   let risultato;
 
   if(modificaId){
-   risultato=await db.from('richieste')
-    .update(record)
-    .eq('id',modificaId)
-    .select();
+   risultato = await db
+    .from('richieste')
+    .update(dati)
+    .eq('id', modificaId);
   }else{
-   risultato=await db.from('richieste')
-    .insert(record)
-    .select();
+   risultato = await db
+    .from('richieste')
+    .insert([dati]);
   }
 
-  if(risultato.error)throw risultato.error;
-  if(!risultato.data || risultato.data.length===0){
-   throw new Error('Nessun record modificato. Verifica i permessi.');
-  }
+  if(risultato.error) throw risultato.error;
 
-  msg.style.color='#65d68a';
-  msg.textContent=modificaId?'Trasporto modificato correttamente!':'Trasporto salvato correttamente!';
+  mostraMessaggio(modificaId
+   ? 'Trasporto modificato correttamente.'
+   : 'Trasporto salvato correttamente.');
+
   resetForm();
   await caricaTrasporti();
 
  }catch(error){
-  msg.style.color='#ff7777';
-  msg.textContent='Errore: '+error.message;
+  console.error(error);
+  mostraMessaggio('Errore nel salvataggio: ' + error.message);
  }finally{
-  bottone.disabled=false;
+  $('pulsanteSalva').disabled = false;
+  $('pulsanteSalva').textContent = modificaId
+   ? 'SALVA MODIFICA' : 'SALVA TRASPORTO';
  }
 });
 
-document.getElementById('annulla').addEventListener('click',function(){
- resetForm();
- msg.textContent='';
-});
+async function controlloAccesso(){
+ const {data,error} = await db.auth.getSession();
+
+ if(error) throw error;
+
+ if(!data.session){
+  window.location.href = './login.html';
+  return false;
+ }
+
+ return true;
+}
 
 async function caricaTrasporti(){
- elenco.innerHTML='<small>Caricamento trasporti...</small>';
+ const elenco = $('elenco');
+ elenco.textContent = 'Caricamento...';
 
  try{
-  if(!await controlloAccesso())return;
-
-  const {data,error}=await db.from('richieste')
-   .select('id,veicolo,targa,luogo_ritiro,luogo_consegna,distanza_km,prezzo,stato,note,created_at')
+  const {data,error} = await db
+   .from('richieste')
+   .select('*')
    .order('created_at',{ascending:false});
 
-  if(error)throw error;
+  if(error) throw error;
 
-  if(!data || data.length===0){
-   elenco.innerHTML='<p>Nessun trasporto presente.</p>';
+  if(!data || data.length === 0){
+   elenco.textContent = 'Nessun trasporto presente.';
    return;
   }
 
-  elenco.innerHTML=data.map(t=>`
-   <div class="item">
-    <h3>${escapeHtml(t.veicolo)}</h3>
-    <p><b>Targa:</b> ${escapeHtml(t.targa || '-')}</p>
-    <p><b>Ritiro:</b> ${escapeHtml(t.luogo_ritiro)}</p>
-    <p><b>Consegna:</b> ${escapeHtml(t.luogo_consegna)}</p>
-    <p><b>Distanza:</b> ${escapeHtml(t.distanza_km ?? '-')} km</p>
-    <p><b>Prezzo:</b> ${t.prezzo===null?' - ':escapeHtml(t.prezzo)+' €'}</p>
-    <p><b>Stato:</b> ${escapeHtml(t.stato || '-')}</p>
-    <p><b>Note:</b> ${escapeHtml(t.note || '-')}</p>
-    <div class="actions">
-     <button type="button" onclick="modificaTrasporto('${t.id}')">MODIFICA</button>
-     <button type="button" class="danger" onclick="eliminaTrasporto('${t.id}')">ELIMINA</button>
+  elenco.innerHTML = '';
+
+  data.forEach(item => {
+   const prezzo = item.prezzo === null || item.prezzo === undefined
+    ? '—' : Number(item.prezzo).toFixed(2) + ' €';
+
+   const modalita = item.modalita_prezzo || 'km';
+
+   const tariffa = item.tariffa_km === null ||
+    item.tariffa_km === undefined
+    ? '—' : Number(item.tariffa_km).toFixed(2) + ' €/km';
+
+   const div = document.createElement('div');
+   div.className = 'trasporto';
+
+   div.innerHTML = `
+    <div><strong>Veicolo:</strong> ${escapeHtml(item.veicolo)}</div>
+    <div><strong>Targa:</strong> ${escapeHtml(item.targa)}</div>
+    <div><strong>Ritiro:</strong> ${escapeHtml(item.luogo_ritiro)}</div>
+    <div><strong>Consegna:</strong> ${escapeHtml(item.luogo_consegna)}</div>
+    <div><strong>Distanza:</strong> ${escapeHtml(item.distanza_km ?? '—')} km</div>
+    <div><strong>Modalità:</strong> ${modalita === 'libero' ? 'Tariffa libera' : 'Prezzo al km'}</div>
+    <div><strong>Tariffa:</strong> ${escapeHtml(tariffa)}</div>
+    <div><strong>Prezzo:</strong> ${escapeHtml(prezzo)}</div>
+    <div><strong>Stato:</strong> ${escapeHtml(item.stato)}</div>
+    <div><strong>Note:</strong> ${escapeHtml(item.note)}</div>
+
+    <div class="azioni">
+     <button class="modifica" onclick="modificaTrasporto('${escapeHtml(item.id)}')">
+      MODIFICA
+     </button>
+     <button class="elimina" onclick="eliminaTrasporto('${escapeHtml(item.id)}')">
+      ELIMINA
+     </button>
     </div>
-   </div>
-  `).join('');
+   `;
+
+   elenco.appendChild(div);
+  });
 
  }catch(error){
-  elenco.innerHTML='<p style="color:#ff7777">Errore: '+escapeHtml(error.message)+'</p>';
+  console.error(error);
+  elenco.textContent = 'Errore nel caricamento: ' + error.message;
  }
 }
 
 async function modificaTrasporto(id){
  try{
-  const {data,error}=await db.from('richieste')
-   .select('*').eq('id',id).single();
+  const {data,error} = await db
+   .from('richieste')
+   .select('*')
+   .eq('id',id)
+   .single();
 
-  if(error)throw error;
+  if(error) throw error;
 
-  modificaId=id;
-  document.getElementById('veicolo').value=data.veicolo || '';
-  document.getElementById('targa').value=data.targa || '';
-  document.getElementById('ritiro').value=data.luogo_ritiro || '';
-  document.getElementById('consegna').value=data.luogo_consegna || '';
-  document.getElementById('distanza').value=data.distanza_km ?? '';
-  document.getElementById('prezzo').value=data.prezzo ?? '';
-  document.getElementById('stato').value=data.stato || 'Da assegnare';
-  document.getElementById('note').value=data.note || '';
+  modificaId = id;
 
-  document.getElementById('titoloForm').textContent='Modifica trasporto';
-  document.getElementById('salva').textContent='SALVA MODIFICHE';
-  document.getElementById('annulla').hidden=false;
-  msg.textContent='Stai modificando il trasporto selezionato.';
+  $('veicolo').value = data.veicolo || '';
+  $('targa').value = data.targa || '';
+  $('ritiro').value = data.luogo_ritiro || '';
+  $('consegna').value = data.luogo_consegna || '';
+  $('distanza').value = data.distanza_km ?? '';
+  $('modalitaPrezzo').value = data.modalita_prezzo || 'km';
+  $('tariffa').value = data.tariffa_km ?? '';
+  $('prezzo').value = data.prezzo ?? '';
+  $('stato').value = data.stato || 'Da effettuare';
+  $('note').value = data.note || '';
+
+  aggiornaModalitaPrezzo();
+
+  if($('modalitaPrezzo').value === 'libero'){
+   $('prezzo').value = data.prezzo ?? '';
+  }
+
+  $('titoloForm').textContent = 'Modifica trasporto';
+  $('pulsanteSalva').textContent = 'SALVA MODIFICA';
+  $('annullaModifica').classList.remove('nascosto');
+
+  mostraMessaggio('Stai modificando il trasporto selezionato.');
+
   window.scrollTo({top:0,behavior:'smooth'});
 
  }catch(error){
-  alert('Errore: '+error.message);
+  alert('Errore nella modifica: ' + error.message);
  }
 }
 
 async function eliminaTrasporto(id){
- if(!confirm('Vuoi eliminare definitivamente questo trasporto?'))return;
+ if(!confirm('Vuoi eliminare questo trasporto?')) return;
 
  try{
-  const {error}=await db.from('richieste').delete().eq('id',id);
-  if(error)throw error;
+  const {error} = await db
+   .from('richieste')
+   .delete()
+   .eq('id',id);
 
-  msg.style.color='#65d68a';
-  msg.textContent='Trasporto eliminato.';
+  if(error) throw error;
+
   await caricaTrasporti();
 
  }catch(error){
-  alert('Errore durante eliminazione: '+error.message);
+  alert('Errore durante eliminazione: ' + error.message);
  }
 }
 
-document.getElementById('aggiorna').addEventListener('click',caricaTrasporti);
+(async function avvio(){
+ try{
+  const accesso = await controlloAccesso();
 
-controlloAccesso().then(ok=>{
- if(ok)caricaTrasporti();
-});
+  if(accesso){
+   aggiornaModalitaPrezzo();
+   await caricaTrasporti();
+  }
+ }catch(error){
+  console.error(error);
+  $('elenco').textContent = 'Errore: ' + error.message;
+ }
+})();
 </script>
+
 </body>
 </html>
+
 
 
