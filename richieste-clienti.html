@@ -54,6 +54,10 @@ select{
  display:block;width:100%;margin-top:18px;padding:15px;
  background:#245b3a;color:white;cursor:default;
 }
+.elimina{
+ display:block;width:100%;margin-top:12px;padding:15px;
+ background:#a52a2a;color:white;font-size:15px;
+}
 .data{color:#999;font-size:13px}
 .empty{
  text-align:center;padding:35px;color:#aaa;
@@ -124,6 +128,53 @@ function aggiungiLink(contenitore,testo,url){
 function dataFormattata(data){
  if(!data) return "Data non disponibile";
  return new Date(data).toLocaleString("it-IT");
+}
+
+/* ELIMINA RICHIESTA */
+
+async function eliminaRichiesta(r,pulsante){
+
+ const conferma=confirm(
+  "ATTENZIONE!\n\n"+
+  "Vuoi eliminare definitivamente la richiesta di "+
+  (r.nome||"questo cliente")+"?\n\n"+
+  "Il trasporto eventualmente già creato NON verrà eliminato."
+ );
+
+ if(!conferma) return;
+
+ pulsante.disabled=true;
+ pulsante.textContent="ELIMINAZIONE IN CORSO...";
+
+ try{
+
+  const {data,error}=await client
+   .from("richieste_clienti")
+   .delete()
+   .eq("id",r.id)
+   .select("id");
+
+  if(error) throw error;
+
+  if(!data || data.length===0){
+   throw new Error(
+    "Eliminazione non autorizzata. Verifica i permessi Supabase."
+   );
+  }
+
+  messaggio.textContent="Richiesta eliminata correttamente.";
+
+  await caricaRichieste();
+
+ }catch(error){
+
+  console.error("Errore eliminazione:",error);
+  messaggio.textContent="Errore: "+error.message;
+
+  pulsante.disabled=false;
+  pulsante.textContent="ELIMINA RICHIESTA";
+
+ }
 }
 
 /* CERCA UN CLIENTE ESISTENTE O NE CREA UNO NUOVO */
@@ -246,7 +297,7 @@ async function creaTrasporto(r,pulsante){
 
   if(erroreAggiornamento){
    throw new Error(
-    "Trasporto creato, ma collegamento alla richiesta non completato. ID trasporto: "+
+    "Trasporto creato, ma collegamento non completato. ID trasporto: "+
     trasporto.id+". "+erroreAggiornamento.message
    );
   }
@@ -285,7 +336,7 @@ async function caricaRichieste(){
   if(error) throw error;
 
   if(!data||data.length===0){
-   messaggio.textContent="";
+   messaggio.textContent="Richieste ricevute: 0";
    elenco.appendChild(
     creaElemento("div","Non ci sono ancora richieste ricevute.","empty")
    );
@@ -406,6 +457,20 @@ async function caricaRichieste(){
    statoBox.appendChild(salva);
    card.appendChild(statoBox);
 
+   /* PULSANTE ELIMINA */
+
+   const elimina=creaElemento(
+    "button",
+    "ELIMINA RICHIESTA",
+    "elimina"
+   );
+
+   elimina.addEventListener("click",function(){
+    eliminaRichiesta(r,elimina);
+   });
+
+   card.appendChild(elimina);
+
    elenco.appendChild(card);
 
   });
@@ -440,5 +505,8 @@ avvia();
 
 </body>
 </html>
+
+
+
 
 
