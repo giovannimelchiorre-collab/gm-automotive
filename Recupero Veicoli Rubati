@@ -1,0 +1,40 @@
+
+<section class="recupero-veicoli" style="background:#101010;color:#fff;padding:35px 20px;text-align:center;border-radius:12px;">
+
+  <h2 style="color:#d4af62;">RECUPERO VEICOLI RUBATI</h2>
+
+  <h3 style="color:#fff;">GM AUTOMOTIVE – Assistenza su tutto il territorio italiano</h3>
+
+  <p>
+    Grazie a una rete di collaboratori e partner specializzati,
+    GM Automotive offre assistenza e supporto per il recupero
+    di veicoli rubati, sottratti illecitamente o coinvolti in sinistri.
+  </p>
+
+  <p>
+    Il servizio riguarda automobili, motocicli, camion, autobus,
+    rimorchi, furgoni e mezzi da lavoro, su tutto il territorio italiano.
+  </p>
+
+  <p>
+    Collaboriamo con operatori qualificati e, ove necessario,
+    con le autorità competenti, nel rispetto delle normative vigenti.
+    Ogni richiesta viene valutata con attenzione per individuare
+    le possibili procedure di assistenza.
+  </p>
+
+  <h3 style="color:#d4af62;">HAI SUBITO IL FURTO DI UN VEICOLO?</h3>
+
+  <p>
+    Contatta GM Automotive per ricevere informazioni
+    e richiedere assistenza.
+  </p>
+
+  <a href="https://wa.me/"
+     style="display:inline-block;background:#d4af62;color:#111;
+     padding:15px 30px;border-radius:8px;text-decoration:none;
+     font-weight:bold;margin-top:15px;">
+     CONTATTACI
+  </a>
+
+</section>
