@@ -5,168 +5,169 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#101010">
-<title>Richiesta Trasporto - G.M. Automotive</title>
+<title>Richieste Trasporto - G.M. Automotive</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 *{box-sizing:border-box}
 body{
- margin:0;padding:20px;background:#101010;color:white;
- font-family:Arial,sans-serif
+margin:0;padding:20px;
+background:#101010;color:white;
+font-family:Arial,sans-serif;
 }
 .container{
- max-width:600px;margin:25px auto;padding:25px;
- background:#191919;border:1px solid #b99a45;border-radius:14px
+max-width:720px;margin:20px auto;
+background:#191919;
+border:1px solid #806b36;
+border-radius:14px;padding:24px;
 }
-h1{text-align:center;color:#d4af55;font-size:25px}
-.subtitle{text-align:center;color:#ccc;margin-bottom:25px}
+h1{text-align:center;color:#d4af55}
+.subtitle{text-align:center;color:#aaa;margin-bottom:25px}
 label{
- display:block;margin:15px 0 7px;color:#d4af55;font-weight:bold
+display:block;color:#d4af55;
+font-weight:bold;margin:15px 0 7px;
 }
 input,textarea{
- width:100%;padding:13px;border:1px solid #555;
- border-radius:7px;background:#101010;color:white;font-size:16px
+width:100%;padding:13px;
+border:1px solid #806b36;
+border-radius:7px;background:#101010;
+color:white;font-size:16px;
 }
-textarea{min-height:90px;resize:vertical}
+textarea{min-height:100px}
 button{
- width:100%;margin-top:25px;padding:16px;background:#d4af55;
- color:#111;border:0;border-radius:8px;font-size:16px;
- font-weight:bold;cursor:pointer
+width:100%;margin-top:22px;padding:15px;
+border:0;border-radius:7px;
+background:#d4af55;color:#111;
+font-weight:bold;font-size:16px;
+cursor:pointer;
 }
 button:disabled{opacity:.6}
-.back{
- display:block;text-align:center;margin-top:20px;
- color:#d4af55;text-decoration:none
-}
 #messaggio{
- margin-top:18px;text-align:center;font-weight:bold;
- overflow-wrap:anywhere
+text-align:center;margin-top:18px;
+line-height:1.5;
 }
-.small{color:#aaa;font-size:12px;text-align:center;margin-top:18px}
+.nota{text-align:center;color:#aaa;font-size:13px}
+@media(max-width:600px){
+body{padding:10px}
+.container{padding:18px}
+}
 </style>
 </head>
 
 <body>
-<div class="container">
+<main class="container">
 
 <h1>G.M. AUTOMOTIVE</h1>
-<p class="subtitle">Richiedi un preventivo per il tuo trasporto</p>
+<p class="subtitle">RICHIESTA TRASPORTO</p>
 
 <form id="formRichiesta">
 
 <label>Nome e cognome *</label>
-<input type="text" id="nome" required>
+<input name="nome" required>
 
 <label>Telefono *</label>
-<input type="tel" id="telefono" required>
+<input name="telefono" type="tel" required>
 
 <label>Email</label>
-<input type="email" id="email">
+<input name="email" type="email">
 
-<label>Veicolo *</label>
-<input type="text" id="veicolo" required placeholder="Marca e modello">
+<label>Veicolo da trasportare *</label>
+<input name="veicolo" required>
 
 <label>Targa</label>
-<input type="text" id="targa">
+<input name="targa">
 
 <label>Luogo di ritiro *</label>
-<input type="text" id="ritiro" required>
+<input name="luogo_ritiro" required>
 
 <label>Luogo di consegna *</label>
-<input type="text" id="consegna" required>
+<input name="luogo_consegna" required>
 
-<label>Data richiesta</label>
-<input type="date" id="dataRitiro">
+<label>Data richiesta ritiro</label>
+<input name="data_ritiro" type="date">
 
 <label>Note aggiuntive</label>
-<textarea id="note" placeholder="Eventuali informazioni aggiuntive"></textarea>
+<textarea name="note"></textarea>
 
-<button type="submit" id="invia">INVIA RICHIESTA</button>
+<button id="invia" type="submit">
+INVIA RICHIESTA
+</button>
 
 </form>
 
-<div id="messaggio" role="status" aria-live="polite"></div>
+<div id="messaggio" role="status"></div>
 
-<p class="small">I campi contrassegnati con * sono obbligatori.</p>
-<a class="back" href="./index.html">← Torna alla Home</a>
+<p class="nota">* Campi obbligatori</p>
 
-</div>
+</main>
 
 <script>
-const SUPABASE_URL = "https://amnibfcgruniqzvjoaxn.supabase.co";
-const SUPABASE_KEY = "sb_publishable_ya3B1_8f4nh5J4sokWhCHw_6mzOjWWv";
+const SUPABASE_URL =
+"https://amnibfcgruniqzvjoaxn.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_ya3B1_8f4nh5J4sokWhCHw_6mzOjWWv";
+
+const client = window.supabase.createClient(
+SUPABASE_URL,
+SUPABASE_KEY
+);
 
 const form = document.getElementById("formRichiesta");
+const invia = document.getElementById("invia");
 const messaggio = document.getElementById("messaggio");
-const bottone = document.getElementById("invia");
 
-function mostraMessaggio(testo, colore) {
- messaggio.style.color = colore;
- messaggio.textContent = testo;
+form.addEventListener("submit", async function(e){
+
+e.preventDefault();
+
+invia.disabled = true;
+invia.textContent = "INVIO IN CORSO...";
+messaggio.textContent = "";
+
+const dati = new FormData(form);
+
+const richiesta = {
+nome: dati.get("nome").trim(),
+telefono: dati.get("telefono").trim(),
+email: dati.get("email").trim() || null,
+veicolo: dati.get("veicolo").trim(),
+targa: dati.get("targa").trim() || null,
+luogo_ritiro: dati.get("luogo_ritiro").trim(),
+luogo_consegna: dati.get("luogo_consegna").trim(),
+data_ritiro: dati.get("data_ritiro") || null,
+note: dati.get("note").trim() || null,
+stato: "Nuova"
+};
+
+try {
+
+const {error} = await client
+.from("richieste_clienti")
+.insert(richiesta);
+
+if(error) throw error;
+
+form.reset();
+
+messaggio.textContent =
+"Richiesta inviata correttamente! G.M. Automotive ti ricontatterà.";
+
+} catch(error) {
+
+console.error(error);
+
+messaggio.textContent =
+"Errore nell'invio. Riprova più tardi.";
+
+} finally {
+
+invia.disabled = false;
+invia.textContent = "INVIA RICHIESTA";
+
 }
 
-form.addEventListener("submit", async function(e) {
- e.preventDefault();
-
- if (!form.reportValidity()) return;
-
- bottone.disabled = true;
- bottone.textContent = "INVIO IN CORSO...";
- mostraMessaggio("Invio della richiesta in corso...", "#d4af55");
-
- try {
-  if (!window.supabase) {
-   throw new Error("Libreria Supabase non caricata. Controlla la connessione.");
-  }
-
-  const client = window.supabase.createClient(
-   SUPABASE_URL,
-   SUPABASE_KEY
-  );
-
-  const richiesta = {
-   nome: document.getElementById("nome").value.trim(),
-   telefono: document.getElementById("telefono").value.trim(),
-   email: document.getElementById("email").value.trim() || null,
-   veicolo: document.getElementById("veicolo").value.trim(),
-   targa: document.getElementById("targa").value.trim() || null,
-   luogo_ritiro: document.getElementById("ritiro").value.trim(),
-   luogo_consegna: document.getElementById("consegna").value.trim(),
-   data_ritiro: document.getElementById("dataRitiro").value || null,
-   note: document.getElementById("note").value.trim() || null
-  };
-
-  const { error } = await client
-   .from("richieste_clienti")
-   .insert([richiesta]);
-
-  if (error) {
-   console.error("Errore Supabase:", error);
-   throw new Error(
-    error.message +
-    (error.code ? " (Codice: " + error.code + ")" : "") +
-    (error.hint ? " - " + error.hint : "")
-   );
-  }
-
-  form.reset();
-  mostraMessaggio(
-   "Richiesta inviata correttamente! Ti contatteremo al più presto.",
-   "#d4af55"
-  );
-
- } catch (error) {
-  console.error("Errore invio:", error);
-  mostraMessaggio(
-   "INVIO NON RIUSCITO: " + error.message,
-   "#ff7777"
-  );
-
- } finally {
-  bottone.disabled = false;
-  bottone.textContent = "INVIA RICHIESTA";
- }
 });
 </script>
 
